@@ -1,6 +1,6 @@
 import path from "path";
 import { readFile } from "fs/promises";
-import postcss, { Plugin } from "postcss";
+import postcss, { PluginCreator } from "postcss";
 
 interface Import {
     prefix?: string;
@@ -10,80 +10,78 @@ interface Import {
     variation?: boolean;
 }
 
-export default function postcssTokens(): Plugin {
-    return {
-        postcssPlugin: "@atomico/postcss-tokens",
-        AtRule: {
-            import: async (AtRule) => {
-                const file = AtRule.source.input.file;
-                const test = AtRule.params.match(
-                    /(?:"([^"]+)"|'([^']+)')\s+(.+)/
-                );
-                if (!test) return;
+const postcssTokens: PluginCreator<any> = () => ({
+    postcssPlugin: "@atomico/postcss-tokens",
+    AtRule: {
+        import: async (AtRule) => {
+            const file = AtRule.source.input.file;
+            const test = AtRule.params.match(/(?:"([^"]+)"|'([^']+)')\s+(.+)/);
+            if (!test) return;
 
-                let [, quote1, quote2, params] = test;
-                const from = quote1 || quote2;
-                const options = /\(\s*([^:\s]+)\s*:\s*([^)\s]+)\s*\)/;
-                const config: Import = {
-                    root: ":host",
-                    from,
-                    default: true,
-                };
+            let [, quote1, quote2, params] = test;
+            const from = quote1 || quote2;
+            const options = /\(\s*([^:\s]+)\s*:\s*([^)\s]+)\s*\)/;
+            const config: Import = {
+                root: ":host",
+                from,
+                default: true,
+            };
 
-                let subtest: RegExpMatchArray;
+            let subtest: RegExpMatchArray;
 
-                while ((subtest = params.match(options))) {
-                    const [all, index, value] = subtest;
-                    params = params.replace(all, "");
-                    config[index] = value;
-                }
+            while ((subtest = params.match(options))) {
+                const [all, index, value] = subtest;
+                params = params.replace(all, "");
+                config[index] = value;
+            }
 
-                if (!config.prefix) return;
+            if (!config.prefix) return;
 
-                config.root = config.root.replace(/^("|')(.+)("|')$/g, "$2");
+            config.root = config.root.replace(/^("|')(.+)("|')$/g, "$2");
+            const dirname = path.dirname(file);
+            const { variation, ...tokens } = JSON.parse(
+                await readFile(path.join(dirname, config.from), "utf8")
+            );
 
-                const { variation, ...tokens } = JSON.parse(
-                    await readFile(path.join(file, config.from), "utf8")
-                );
+            const rootTokens = mapTokens(tokens, config);
+            const rules: string[] = [];
+            let cssProps = customProperties(rootTokens, config);
+            let isHost = config.root === ":host" ? true : false;
 
-                const rootTokens = mapTokens(tokens, config);
-                const rules: string[] = [];
-                let cssProps = customProperties(rootTokens, config);
-                let isHost = config.root === ":host" ? true : false;
-
-                for (let prop in variation) {
-                    const value = variation[prop];
-                    const prefixVariation = prop.replace(/[^\w]+/g, "-");
-                    const variationTokens = mapTokens(value, config);
-                    if (isHost) {
-                        rules.push(
-                            cssRule(
-                                `:host([${prop}])`,
-                                customProperties(variationTokens, {
-                                    ...config,
-                                    variation: true,
-                                })
-                            )
-                        );
-                    } else {
-                        customProperties(
-                            variationTokens,
-                            {
+            for (let prop in variation) {
+                const value = variation[prop];
+                const prefixVariation = prop.replace(/[^\w]+/g, "-");
+                const variationTokens = mapTokens(value, config);
+                if (isHost) {
+                    rules.push(
+                        cssRule(
+                            `:host([${prop}])`,
+                            customProperties(variationTokens, {
                                 ...config,
-                                prefix: config.prefix + `-` + prefixVariation,
-                            },
-                            cssProps
-                        );
-                    }
+                                variation: true,
+                            })
+                        )
+                    );
+                } else {
+                    customProperties(
+                        variationTokens,
+                        {
+                            ...config,
+                            prefix: config.prefix + `-` + prefixVariation,
+                        },
+                        cssProps
+                    );
                 }
+            }
 
-                rules.unshift(cssRule(`${config.root}`, cssProps));
+            rules.unshift(cssRule(`${config.root}`, cssProps));
 
-                AtRule.replaceWith(rules.map(postcss.parse as any));
-            },
+            AtRule.replaceWith(rules.map(postcss.parse as any));
         },
-    };
-}
+    },
+});
+
+postcssTokens.postcss = true;
 
 const cssRule = (selector: string, cssProps: string[]) =>
     `\n${selector}{\n${cssProps
@@ -137,3 +135,5 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
 
     return css;
 }
+
+export default postcssTokens;

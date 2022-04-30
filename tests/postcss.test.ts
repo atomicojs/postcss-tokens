@@ -8,7 +8,7 @@ test("result host", async () => {
     const result = await postcss([postcssTokens()]).process(
         `@import "./tokens.json" ( prefix: my-dsprefix );`,
         {
-            from: "./tests",
+            from: "./tests/demo.css",
         }
     );
 
@@ -20,7 +20,7 @@ test("result host", async () => {
     const result = await postcss([postcssTokens()]).process(
         `@import "./tokens.json" ( prefix: my-dsprefix ) and (root: ":root");`,
         {
-            from: "./tests",
+            from: "./tests/demo.css",
         }
     );
     // await writeFile("./tests/expect-root.txt", result.css);
