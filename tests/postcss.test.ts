@@ -1,11 +1,11 @@
 import { test } from "uvu";
 import * as assert from "uvu/assert";
 import postcss from "postcss";
-import { pluginPostcss } from "../src/postcss-tokens";
+import postcssTokens from "../src/postcss-tokens";
 import { readFile, writeFile } from "fs/promises";
 
 test("result host", async () => {
-    const result = await postcss([pluginPostcss()]).process(
+    const result = await postcss([postcssTokens()]).process(
         `@import "./tokens.json" ( prefix: my-dsprefix );`,
         {
             from: "./tests",
@@ -17,7 +17,7 @@ test("result host", async () => {
 });
 
 test("result host", async () => {
-    const result = await postcss([pluginPostcss()]).process(
+    const result = await postcss([postcssTokens()]).process(
         `@import "./tokens.json" ( prefix: my-dsprefix ) and (root: ":root");`,
         {
             from: "./tests",
