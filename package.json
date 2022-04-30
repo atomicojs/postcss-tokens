@@ -1,0 +1,46 @@
+{
+    "name": "@atomico/postcss-tokens",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Transform a simple object into tokens for webcomponents or html",
+    "main": "./dist/postcss-tokens.js",
+    "module": "./dist/postcss-tokens.js",
+    "types": "./types/postcss-tokens.d.ts",
+    "exports": {
+        ".": "./dist/postcss-tokens.js"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "test": "uvu -r tsm tests",
+        "types": "tsc",
+        "build": "esbuild src/postcss-tokens.ts --platform=node --outdir=dist --target=esnext",
+        "prepublishOnly": "npm run test && npm run types && npm run build"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/atomicojs/postcss-tokens.git"
+    },
+    "author": "UpperCod",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/atomicojs/postcss-tokens/issues"
+    },
+    "homepage": "https://github.com/atomicojs/postcss-tokens#readme",
+    "devDependencies": {
+        "@types/node": "^17.0.30",
+        "esbuild": "^0.14.38",
+        "postcss": "^8.4.12",
+        "tsm": "^2.2.1",
+        "typescript": "^4.6.3",
+        "uvu": "^0.5.3"
+    },
+    "peerDependencies": {
+        "postcss": "^8.4.12"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": false
+    }
+}

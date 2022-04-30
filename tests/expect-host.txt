@@ -1,0 +1,69 @@
+
+:host{
+   --font-size: var(--my-dsprefix--font-size, 1rem);
+   --font-family: var(--my-dsprefix--font-family, unset);
+   --border-radius: var(--my-dsprefix--border-radius, .5rem);
+   --border-width: var(--my-dsprefix--border-width, 1px);
+   --opacity-unselect: var(--my-dsprefix--opacity-unselect, .25);
+   --opacity-unfocus: var(--my-dsprefix--opacity-unfocus, .5);
+   --opacity-disabled: var(--my-dsprefix--opacity-disabled, .5);
+   --size: var(--my-dsprefix--size, 4px);
+   --size-xl: calc(var(--size) * 10);
+   --size-l: calc(var(--size) * 8);
+   --size-m: calc(var(--size) * 7);
+   --size-s: calc(var(--size) * 5);
+   --size-xs: calc(var(--size) * 4);
+   --size-xxs: calc(var(--size) * 3);
+   --color-primary-10: var(--my-dsprefix--color-primary-10, #fff);
+   --color-primary-30: var(--my-dsprefix--color-primary-30, transparent);
+   --color-primary-60: var(--my-dsprefix--color-primary-60, #2C3A41);
+   --color-action-10: var(--color-primary-60);
+   --color-action-30: var(--my-dsprefix--color-action-30, transparent);
+   --color-action-60: var(--my-dsprefix--color-action-60, #fff);
+   --color-toggle-10: var(--color-primary-10);
+   --color-toggle-30: var(--color-primary-30);
+   --color-toggle-60: var(--color-primary-60);
+   --color-layer-10: var(--color-primary-60);
+   --color-layer-30: var(--my-dsprefix--color-layer-30, transparent);
+   --color-layer-60: var(--my-dsprefix--color-layer-60, #fff);
+   --color-scroll-10: var(--color-neutral-10);
+   --color-scroll-30: var(--my-dsprefix--color-scroll-30, transparent);
+   --color-scroll-60: var(--my-dsprefix--color-scroll-60, transparent);
+   --color-input-10: var(--color-action-10);
+   --color-input-30: var(--color-action-30);
+   --color-input-60: var(--color-action-60);
+   --color-button-10: var(--color-action-10);
+   --color-button-30: var(--color-action-30);
+   --color-button-60: var(--color-action-60);
+   --color-success-10: var(--my-dsprefix--color-success-10, #fff);
+   --color-success-30: var(--my-dsprefix--color-success-30, transparent);
+   --color-success-60: var(--my-dsprefix--color-success-60, #18D47C);
+   --color-info-10: var(--my-dsprefix--color-info-10, #fff);
+   --color-info-30: var(--my-dsprefix--color-info-30, transparent);
+   --color-info-60: var(--my-dsprefix--color-info-60, #0080FF);
+   --color-warning-10: var(--my-dsprefix--color-warning-10, #fff);
+   --color-warning-30: var(--my-dsprefix--color-warning-30, transparent);
+   --color-warning-60: var(--my-dsprefix--color-warning-60, #F9AA33);
+   --color-danger-10: var(--my-dsprefix--color-danger-10, #fff);
+   --color-danger-30: var(--my-dsprefix--color-danger-30, transparent);
+   --color-danger-60: var(--my-dsprefix--color-danger-60, #FF5B5B);
+   --color-neutral-10: var(--color-primary-60);
+   --color-neutral-30: var(--my-dsprefix--color-neutral-30, transparent);
+   --color-neutral-60: var(--my-dsprefix--color-neutral-60, #D8E2EA);
+   --input-border-width: var(--border-width);
+   --input-border-style: var(--my-dsprefix--input-border-style, solid);
+   --input-border-color: var(--color-input-30);
+   --tab-width: var(--my-dsprefix--tab-width, 100%);
+   --tab-height: var(--my-dsprefix--tab-height, 100%);
+   --tab-radius: var(--my-dsprefix--tab-radius, 100px);
+   --transition-action: var(--my-dsprefix--transition-action, .2s ease all);
+   --shadow-layer: var(--my-dsprefix--shadow-layer, 0px 12px 22px rgba(0,0,0 ,.05))
+}
+
+:host([size=small]){
+   --font-size: var(--my-dsprefix--font-size, 0.875rem);
+   --size-xl: calc(var(--size) * 8);
+   --size-l: calc(var(--size) * 7);
+   --size-m: calc(var(--size) * 5);
+   --size-s: calc(var(--size) * 3.5)
+}
