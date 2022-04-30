@@ -10,7 +10,7 @@ interface Import {
     variation?: boolean;
 }
 
-export default function pluginPostcss(): Plugin {
+export default function postcssTokens(): Plugin {
     return {
         postcssPlugin: "@atomico/postcss-tokens",
         AtRule: {
