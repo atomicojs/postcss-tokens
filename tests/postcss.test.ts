@@ -6,7 +6,7 @@ import { readFile, writeFile } from "fs/promises";
 
 test("result host", async () => {
     const result = await postcss([postcssTokens()]).process(
-        `@import "./tokens.json" ( prefix: my-dsprefix );`,
+        `@import "./tokens.json" ( prefix: "my-dsprefix" );`,
         {
             from: "./tests/demo.css",
         }

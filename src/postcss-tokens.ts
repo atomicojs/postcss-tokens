@@ -21,6 +21,7 @@ const postcssTokens: PluginCreator<any> = () => ({
             let [, quote1, quote2, params] = test;
             const from = quote1 || quote2;
             const options = /\(\s*([^:\s]+)\s*:\s*([^)\s]+)\s*\)/;
+
             const config: Import = {
                 root: ":host",
                 from,
@@ -32,12 +33,12 @@ const postcssTokens: PluginCreator<any> = () => ({
             while ((subtest = params.match(options))) {
                 const [all, index, value] = subtest;
                 params = params.replace(all, "");
-                config[index] = value;
+                const nextValue = cleanQuote(value);
+                config[index] = nextValue === "true" ? true : nextValue;
             }
 
             if (!config.prefix) return;
 
-            config.root = config.root.replace(/^("|')(.+)("|')$/g, "$2");
             const dirname = path.dirname(file);
             const { variation, ...tokens } = JSON.parse(
                 await readFile(path.join(dirname, config.from), "utf8")
@@ -89,6 +90,8 @@ const cssRule = (selector: string, cssProps: string[]) =>
         .join(";\n")}\n}`;
 
 const dotToDash = (value: string) => value.replace(/\./g, `-`);
+
+const cleanQuote = (value: string) => value.replace(/^("|')(.+)("|')$/g, "$2");
 
 function mapTokens(tokens: any, config: Import, root = {}, parent?: string) {
     for (let prop in tokens) {
