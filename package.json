@@ -1,13 +1,15 @@
 {
     "name": "@atomico/postcss-tokens",
-    "type": "module",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Transform a simple object into tokens for webcomponents or html",
-    "main": "./dist/postcss-tokens.js",
-    "module": "./dist/postcss-tokens.js",
+    "main": "./dist/postcss-tokens.cjs",
+    "module": "./dist/postcss-tokens.mjs",
     "types": "./types/postcss-tokens.d.ts",
     "exports": {
-        ".": "./dist/postcss-tokens.js"
+        ".": {
+            "require": "./dist/postcss-tokens.cjs",
+            "import": "./dist/postcss-tokens.mjs"
+        }
     },
     "publishConfig": {
         "access": "public"
@@ -15,7 +17,7 @@
     "scripts": {
         "test": "uvu -r tsm tests",
         "types": "tsc",
-        "build": "esbuild src/postcss-tokens.ts --platform=node --outdir=dist --target=esnext",
+        "build": "rollup -c",
         "prepublishOnly": "npm run test && npm run types && npm run build"
     },
     "repository": {
@@ -32,6 +34,8 @@
         "@types/node": "^17.0.30",
         "esbuild": "^0.14.38",
         "postcss": "^8.4.12",
+        "rollup": "^2.71.0",
+        "rollup-plugin-esbuild": "^4.9.1",
         "tsm": "^2.2.1",
         "typescript": "^4.6.3",
         "uvu": "^0.5.3"
