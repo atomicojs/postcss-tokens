@@ -27,4 +27,14 @@ test("result host", async () => {
     assert.is(result.css, await readFile("./tests/expect-root.txt", "utf8"));
 });
 
+test("result host", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix" }),
+    ]).process(`@import "./tokens.json" (use: "size|font|color.primary");`, {
+        from: "./tests/demo.css",
+    });
+
+    assert.is(result.css, await readFile("./tests/expect-use.txt", "utf8"));
+});
+
 test.run();

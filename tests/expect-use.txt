@@ -1,0 +1,23 @@
+
+:host{
+   --font-size: var(--my-dsprefix--font-size, 1rem);
+   --font-family: var(--my-dsprefix--font-family, unset);
+   --size: var(--my-dsprefix--size, 4px);
+   --size-xl: calc(var(--size) * 10);
+   --size-l: calc(var(--size) * 8);
+   --size-m: calc(var(--size) * 7);
+   --size-s: calc(var(--size) * 5);
+   --size-xs: calc(var(--size) * 4);
+   --size-xxs: calc(var(--size) * 3);
+   --color-primary-10: var(--my-dsprefix--color-primary-10, #fff);
+   --color-primary-30: var(--my-dsprefix--color-primary-30, transparent);
+   --color-primary-60: var(--my-dsprefix--color-primary-60, #2C3A41)
+}
+
+:host([size=small]){
+   --font-size: var(--my-dsprefix--font-size, 0.875rem);
+   --size-xl: calc(var(--size) * 8);
+   --size-l: calc(var(--size) * 7);
+   --size-m: calc(var(--size) * 5);
+   --size-s: calc(var(--size) * 3.5)
+}

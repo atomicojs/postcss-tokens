@@ -1,16 +1,21 @@
 import path from "path";
 import { readFile } from "fs/promises";
-import postcss, { PluginCreator, AtRule } from "postcss";
+import postcss, { PluginCreator, AtRule, atRule } from "postcss";
 
 interface Import {
     prefix?: string;
     root: string;
     from: string;
+    use?: string;
     default?: boolean;
     variation?: boolean;
 }
 
-async function replace(atRule: AtRule) {
+interface Options {
+    prefix?: string;
+}
+
+async function replace(atRule: AtRule, rootOptions: Options) {
     const file = atRule.source.input.file;
     const test = atRule.params.match(/(?:"([^"]+)"|'([^']+)')\s+(.+)/);
     if (!test) return;
@@ -20,6 +25,7 @@ async function replace(atRule: AtRule) {
     const options = /\(\s*([^:\s]+)\s*:\s*([^)\s]+)\s*\)/;
 
     const config: Import = {
+        ...rootOptions,
         root: ":host",
         from,
         default: true,
@@ -31,17 +37,21 @@ async function replace(atRule: AtRule) {
         const [all, index, value] = subtest;
         params = params.replace(all, "");
         const nextValue = cleanQuote(value);
-        config[index] = nextValue === "true" ? true : nextValue;
+        const lastValue = nextValue === "true" ? true : nextValue;
+
+        config[index] = lastValue;
     }
 
-    if (!config.prefix) return;
+    if (!config.prefix || !config.from.endsWith(".json")) return;
 
     const dirname = path.dirname(file);
+
     const { variation, ...tokens } = JSON.parse(
         await readFile(path.join(dirname, config.from), "utf8")
     );
 
-    const rootTokens = mapTokens(tokens, config);
+    const rootTokens = filterTokens(mapTokens(tokens, config), config.use);
+
     const rules: string[] = [];
     let cssProps = customProperties(rootTokens, config);
     let isHost = config.root === ":host" ? true : false;
@@ -49,7 +59,10 @@ async function replace(atRule: AtRule) {
     for (let prop in variation) {
         const value = variation[prop];
         const prefixVariation = prop.replace(/[^\w]+/g, "-");
-        const variationTokens = mapTokens(value, config);
+        const variationTokens = filterTokens(
+            mapTokens(value, config),
+            config.use
+        );
         if (isHost) {
             rules.push(
                 cssRule(
@@ -77,11 +90,11 @@ async function replace(atRule: AtRule) {
     atRule.replaceWith(rules.map(postcss.parse as any));
 }
 
-const postcssTokens: PluginCreator<any> = () => ({
+const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     postcssPlugin: "@atomico/postcss-tokens",
     AtRule: {
-        tokens: replace,
-        import: replace,
+        tokens: (atRule) => replace(atRule, options),
+        import: (atRule) => replace(atRule, options),
     },
 });
 
@@ -107,6 +120,33 @@ function mapTokens(tokens: any, config: Import, root = {}, parent?: string) {
         }
     }
     return root;
+}
+
+function filterTokens(tokens: any, filter: string) {
+    if (!filter) return tokens;
+    let nextTokens = {};
+    const mod: [RegExp, string][] = [
+        [/\s/g, ""],
+        [/\{/g, "("],
+        [/\}/g, ")"],
+        [/\,/g, "|"],
+        [/\./g, "\\."],
+    ];
+
+    let regtExp = RegExp(
+        `^(${mod.reduce(
+            (filter, [reg, replace]) => filter.replace(reg, replace),
+            filter
+        )})`
+    );
+
+    for (let prop in tokens) {
+        if (regtExp.test(prop)) {
+            nextTokens[prop] = tokens[prop];
+        }
+    }
+
+    return nextTokens;
 }
 
 function customProperties(tokens: any, config: Import, css: string[] = []) {
