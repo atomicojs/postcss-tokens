@@ -100,7 +100,7 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
                 ...options,
                 async load(file, from) {
                     let data: any;
-                    if (options.load) {
+                    if (options?.load) {
                         data = await options.load(file, from);
                     }
                     return data ? data : load(file);
