@@ -1,6 +1,6 @@
 {
     "name": "@atomico/postcss-tokens",
-    "version": "1.4.1",
+    "version": "1.4.2",
     "description": "Transform a simple object into tokens for webcomponents or html",
     "main": "./dist/postcss-tokens.cjs",
     "module": "./dist/postcss-tokens.mjs",
@@ -39,17 +39,15 @@
         "rollup-plugin-esbuild": "^4.9.1",
         "tsm": "^2.2.1",
         "typescript": "^4.6.3",
-        "uvu": "^0.5.3"
+        "uvu": "^0.5.3",
+        "js-yaml": "latest"
     },
     "peerDependencies": {
-        "js-yaml": "^4.1.0",
-        "postcss": "^8.4.12"
+        "js-yaml": "latest",
+        "postcss": "latest"
     },
     "prettier": {
         "tabWidth": 4,
         "singleQuote": false
-    },
-    "dependencies": {
-        "js-yaml": "^4.1.0"
     }
 }
