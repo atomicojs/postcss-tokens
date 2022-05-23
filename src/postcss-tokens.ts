@@ -1,7 +1,6 @@
 import path from "path";
-import { readFile } from "fs/promises";
 import postcss, { PluginCreator, AtRule } from "postcss";
-import yaml from "js-yaml";
+import { load } from "./load";
 
 interface Import {
     prefix?: string;
@@ -16,9 +15,6 @@ interface Options {
     prefix?: string;
     load?: (file: string, from: string) => Promise<any>;
 }
-
-export const load = async (file: string) =>
-    yaml.load(await readFile(file, "utf8"));
 
 async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     const file = atRule.source.input.file;
@@ -100,7 +96,16 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     postcssPlugin: "@atomico/postcss-tokens",
     AtRule: {
         tokens: (atRule) =>
-            replace(atRule, { ...options, load: options?.load || load }),
+            replace(atRule, {
+                ...options,
+                async load(file, from) {
+                    let data: any;
+                    if (options.load) {
+                        data = await options.load(file, from);
+                    }
+                    return data ? data : load(file);
+                },
+            }),
     },
 });
 
