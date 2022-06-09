@@ -166,7 +166,7 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
     for (let prop in tokens) {
         let cssProp = `--` + dotToDash(prop);
 
-        const cssValue = tokens[prop].replace(
+        const cssValue = (tokens[prop] + "").replace(
             /@([\w\.]+)/g,
             (all, prop: string) => {
                 const cssValue = `--${dotToDash(prop)}`;
