@@ -58,6 +58,7 @@
    --my-dsprefix--tab-radius: 100px;
    --my-dsprefix--transition-action: .2s ease all;
    --my-dsprefix--shadow-layer: 0px 12px 22px rgba(0,0,0 ,.05);
+   --my-dsprefix--vars-x: var(--my-dsprefix--vars-x, var(--my-dsprefix--size));
    --my-dsprefix-size-small--font-size: 0.875rem;
    --my-dsprefix-size-small--size-xl: calc(var(--my-dsprefix-size-small--size) * 8);
    --my-dsprefix-size-small--size-l: calc(var(--my-dsprefix-size-small--size) * 7);

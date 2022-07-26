@@ -167,12 +167,15 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
         let cssProp = `--` + dotToDash(prop);
 
         const cssValue = (tokens[prop] + "").replace(
-            /@([\w\.]+)/g,
-            (all, prop: string) => {
+            /(@|\$)([\w\.]+)/g,
+            (all, type: string, prop: string) => {
                 const cssValue = `--${dotToDash(prop)}`;
-                return isHost
+                const cssVar = isHost
                     ? `var(${cssValue})`
                     : `var(--${config.prefix}${cssValue})`;
+                return type === "$"
+                    ? `var(--${config.prefix}${cssProp}, ${cssVar})`
+                    : cssVar;
             }
         );
 

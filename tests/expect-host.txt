@@ -57,7 +57,8 @@
    --tab-height: var(--my-dsprefix--tab-height, 100%);
    --tab-radius: var(--my-dsprefix--tab-radius, 100px);
    --transition-action: var(--my-dsprefix--transition-action, .2s ease all);
-   --shadow-layer: var(--my-dsprefix--shadow-layer, 0px 12px 22px rgba(0,0,0 ,.05))
+   --shadow-layer: var(--my-dsprefix--shadow-layer, 0px 12px 22px rgba(0,0,0 ,.05));
+   --vars-x: var(--my-dsprefix--vars-x, var(--size))
 }
 
 :host([size=small]){
