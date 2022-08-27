@@ -9,12 +9,15 @@ interface Import {
     use?: string;
     default?: boolean;
     variation?: boolean;
+    wrapper?: boolean;
 }
 
 interface Options {
     prefix?: string;
     load?: (file: string, from: string) => Promise<any>;
 }
+
+let currentRoot: { [prop: string]: string };
 
 async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     const file = atRule.source.input.file;
@@ -23,7 +26,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     let [, quote1, quote2, params] = test;
     const from = quote1 || quote2;
-    const options = /\(\s*([^:\s]+)\s*:\s*([^)\s]+)\s*\)/;
+    const options = /\(\s*([^:\s]+)\s*:\s*([^)]+)\s*\)/;
 
     const config: Import = {
         ...rootOptions,
@@ -54,6 +57,10 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     const rootTokens = filterTokens(mapTokens(tokens, config), config.use);
 
+    if (config.root === ":root") {
+        currentRoot = rootTokens;
+    }
+
     const rules: string[] = [];
     let cssProps = customProperties(rootTokens, config);
     let isHost = config.root === ":host" ? true : false;
@@ -65,6 +72,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
             mapTokens(value, config),
             config.use
         );
+
         if (isHost) {
             rules.push(
                 cssRule(
@@ -96,17 +104,27 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     postcssPlugin: "@atomico/postcss-tokens",
     AtRule: {
         tokens: (atRule) => {
-            if (options.prefix && atRule.parent.type === "rule") {
-                const delc = atRule.params
-                    .split(",")
-                    .map((value) => value.trim())
-                    .reduce(
-                        (decl, prop) =>
-                            decl +
-                            `--${prop}: var(--${options.prefix}--${prop});`,
-                        ""
-                    );
-                atRule.replaceWith(postcss.parse(delc));
+            if (options?.prefix && atRule.parent.type === "rule") {
+                let tokens = currentRoot
+                    ? filterTokens(currentRoot, atRule.params)
+                    : atRule.params
+                          .split(",")
+                          .map((value) => value.trim())
+                          .reduce((decl, prop) => {
+                              decl[prop] = `$${prop}`;
+                              return decl;
+                          }, {});
+
+                const decl = postcss.parse(
+                    customProperties(tokens, {
+                        root: ":host",
+                        prefix: options.prefix,
+                        from: "",
+                        wrapper: true,
+                    }).join(";\n")
+                );
+
+                atRule.replaceWith(decl);
             } else {
                 return replace(atRule, {
                     ...options,
@@ -161,7 +179,7 @@ function filterTokens(tokens: any, filter: string) {
     let regtExp = RegExp(
         `^(${mod.reduce(
             (filter, [reg, replace]) => filter.replace(reg, replace),
-            filter
+            filter.replace(/\s+/g, "")
         )})`
     );
 
@@ -180,6 +198,11 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
     for (let prop in tokens) {
         let cssProp = `--` + dotToDash(prop);
 
+        if (config.wrapper) {
+            css.push(`${cssProp}: var(--${config.prefix}${cssProp})`);
+            continue;
+        }
+
         const cssValue = (tokens[prop] + "").replace(
             /(@|\$)([\w\.]+)/g,
             (all, type: string, prop: string) => {
@@ -194,7 +217,7 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
         );
 
         const refCssProp =
-            isHost && tokens[prop] === cssValue
+            isHost && tokens[prop] === cssValue && !config.wrapper
                 ? `var(--${config.prefix}${cssProp}${
                       config.default ? `, ${cssValue}` : ""
                   })`
