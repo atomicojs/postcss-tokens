@@ -1,5 +1,5 @@
 import path from "path";
-import postcss, { PluginCreator, AtRule } from "postcss";
+import postcss, { PluginCreator, AtRule, Declaration, decl } from "postcss";
 import { load } from "./load";
 
 interface Import {
@@ -95,17 +95,31 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     postcssPlugin: "@atomico/postcss-tokens",
     AtRule: {
-        tokens: (atRule) =>
-            replace(atRule, {
-                ...options,
-                async load(file, from) {
-                    let data: any;
-                    if (options?.load) {
-                        data = await options.load(file, from);
-                    }
-                    return data ? data : load(file);
-                },
-            }),
+        tokens: (atRule) => {
+            if (options.prefix && atRule.parent.type === "rule") {
+                const delc = atRule.params
+                    .split(",")
+                    .map((value) => value.trim())
+                    .reduce(
+                        (decl, prop) =>
+                            decl +
+                            `--${prop}: var(--${options.prefix}--${prop});`,
+                        ""
+                    );
+                atRule.replaceWith(postcss.parse(delc));
+            } else {
+                return replace(atRule, {
+                    ...options,
+                    async load(file, from) {
+                        let data: any;
+                        if (options?.load) {
+                            data = await options.load(file, from);
+                        }
+                        return data ? data : load(file);
+                    },
+                });
+            }
+        },
     },
 });
 

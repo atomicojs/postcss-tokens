@@ -1,0 +1,5 @@
+
+        :host{--color-title: var(--my-dsprefix--color-title);--font-line-title: var(--my-dsprefix--font-line-title);--font-weight-title: var(--my-dsprefix--font-weight-title);
+            color: var(--color-title);
+        }
+    

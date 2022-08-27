@@ -1,6 +1,6 @@
 {
     "name": "@atomico/postcss-tokens",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "description": "Transform a simple object into tokens for webcomponents or html",
     "main": "./dist/postcss-tokens.cjs",
     "module": "./dist/postcss-tokens.mjs",
@@ -41,6 +41,10 @@
         "typescript": "^4.6.3",
         "uvu": "^0.5.3",
         "js-yaml": "latest"
+    },
+    "dependencies": {
+        "js-yaml": "latest",
+        "postcss": "latest"
     },
     "peerDependencies": {
         "js-yaml": "latest",
