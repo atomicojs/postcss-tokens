@@ -4,24 +4,24 @@ import postcss from "postcss";
 import postcssTokens from "../src/postcss-tokens";
 import { readFile, writeFile } from "fs/promises";
 
-// test("result autoprefix", async () => {
-//     const result = await postcss([
-//         postcssTokens({ prefix: "my-dsprefix" }),
-//     ]).process(
-//         `
-//         :host{
-//             @tokens color.primary, font;
-//             color: var(--color-title);
-//         }
-//     `,
-//         {
-//             from: "./tests/demo.css",
-//         }
-//     );
+test("result autoprefix", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix" }),
+    ]).process(
+        `
+        :host{
+            @tokens color.primary, font;
+            color: var(--color-title);
+        }
+    `,
+        {
+            from: "./tests/demo.css",
+        }
+    );
 
-//     // writeFile("./tests/expect-rule.txt", result.css);
-//     assert.is(result.css, await readFile("./tests/expect-rule.txt", "utf8"));
-// });
+    // writeFile("./tests/expect-rule.txt", result.css);
+    assert.is(result.css, await readFile("./tests/expect-rule.txt", "utf8"));
+});
 
 test("result host", async () => {
     const result = await postcss([postcssTokens()]).process(

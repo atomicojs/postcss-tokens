@@ -26,7 +26,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     let [, quote1, quote2, params] = test;
     const from = quote1 || quote2;
-    const options = /\(\s*([^:\s]+)\s*:\s*([^)]+)\s*\)/;
+    const options = /\(\s*([^:\s]+)\s*:\s*([^\s)]+)\s*\)/;
 
     const config: Import = {
         ...rootOptions,
@@ -106,7 +106,10 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
         tokens: (atRule) => {
             if (options?.prefix && atRule.parent.type === "rule") {
                 let tokens = currentRoot
-                    ? filterTokens(currentRoot, atRule.params)
+                    ? filterTokens(
+                          currentRoot,
+                          atRule.params.replace(/\s+/g, "")
+                      )
                     : atRule.params
                           .split(",")
                           .map((value) => value.trim())
