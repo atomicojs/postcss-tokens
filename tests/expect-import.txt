@@ -1,0 +1,9 @@
+
+:host{
+   --size: var(--my-dsprefix--font-size, 1rem);
+   --family: var(--my-dsprefix--font-family, unset)
+}
+
+:host([size=small]){
+   --size: var(--my-dsprefix-size-small--font-size, 0.875rem)
+}

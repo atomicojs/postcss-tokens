@@ -23,6 +23,17 @@ test("result autoprefix", async () => {
     assert.is(result.css, await readFile("./tests/expect-rule.txt", "utf8"));
 });
 
+test("result import", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix" }),
+    ]).process(`@tokens "./tokens.json" (import:font);`, {
+        from: "./tests/demo.css",
+    });
+
+    // writeFile("./tests/expect-import.txt", result.css);
+    assert.is(result.css, await readFile("./tests/expect-import.txt", "utf8"));
+});
+
 test("result host", async () => {
     const result = await postcss([postcssTokens()]).process(
         `@tokens "./tokens.json" ( prefix: "my-dsprefix" );`,

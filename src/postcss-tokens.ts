@@ -7,8 +7,9 @@ interface Import {
     root: string;
     from: string;
     use?: string;
+    import?: string;
     default?: boolean;
-    variation?: boolean;
+    variation?: string;
     wrapper?: boolean;
 }
 
@@ -21,10 +22,10 @@ let currentRoot: { [prop: string]: string };
 
 async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     const file = atRule.source.input.file;
-    const test = atRule.params.match(/(?:"([^"]+)"|'([^']+)')\s+(.+)/);
+    const test = atRule.params.match(/(?:"([^"]+)"|'([^']+)')\s*(.+){0,1}/);
     if (!test) return;
 
-    let [, quote1, quote2, params] = test;
+    let [, quote1, quote2, params = ""] = test;
     const from = quote1 || quote2;
     const options = /\(\s*([^:\s]+)\s*:\s*([^\s)]+)\s*\)/;
 
@@ -47,6 +48,8 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     }
 
     if (!config.prefix) return;
+
+    if (!config.use && config.import) config.use = config.import;
 
     const dirname = path.dirname(file);
 
@@ -73,13 +76,15 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
             config.use
         );
 
+        const prefix = config.prefix + `-` + prefixVariation;
+
         if (isHost) {
             rules.push(
                 cssRule(
                     `:host([${prop}])`,
                     customProperties(variationTokens, {
                         ...config,
-                        variation: true,
+                        prefix,
                     })
                 )
             );
@@ -88,7 +93,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
                 variationTokens,
                 {
                     ...config,
-                    prefix: config.prefix + `-` + prefixVariation,
+                    prefix,
                 },
                 cssProps
             );
@@ -197,8 +202,13 @@ function filterTokens(tokens: any, filter: string) {
 
 function customProperties(tokens: any, config: Import, css: string[] = []) {
     let isHost = config.root === ":host" ? true : false;
+    let regImport = config.import
+        ? RegExp(`^--${config.import}.`.replace(/\./g, "\\-"))
+        : "";
 
     for (let prop in tokens) {
+        const value = tokens[prop];
+
         let cssProp = `--` + dotToDash(prop);
 
         if (config.wrapper) {
@@ -206,7 +216,7 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
             continue;
         }
 
-        const cssValue = (tokens[prop] + "").replace(
+        const cssValue = (value + "").replace(
             /(@|\$)([\w\.]+)/g,
             (all, type: string, prop: string) => {
                 const cssValue = `--${dotToDash(prop)}`;
@@ -220,7 +230,7 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
         );
 
         const refCssProp =
-            isHost && tokens[prop] === cssValue && !config.wrapper
+            isHost && value === cssValue && !config.wrapper
                 ? `var(--${config.prefix}${cssProp}${
                       config.default ? `, ${cssValue}` : ""
                   })`
@@ -228,7 +238,11 @@ function customProperties(tokens: any, config: Import, css: string[] = []) {
 
         css.push(
             `${
-                isHost ? cssProp : `--${config.prefix}${cssProp}`
+                isHost
+                    ? regImport
+                        ? cssProp.replace(regImport, "--")
+                        : cssProp
+                    : `--${config.prefix}${cssProp}`
             }: ${refCssProp}`
         );
     }
