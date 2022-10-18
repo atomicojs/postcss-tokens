@@ -1,6 +1,6 @@
 {
     "name": "@atomico/postcss-tokens",
-    "version": "1.8.0",
+    "version": "1.9.0",
     "description": "Transform a simple object into tokens for webcomponents or html",
     "main": "./dist/postcss-tokens.cjs",
     "module": "./dist/postcss-tokens.mjs",
