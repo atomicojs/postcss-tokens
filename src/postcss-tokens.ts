@@ -15,6 +15,7 @@ interface Import {
 
 interface Options {
     prefix?: string;
+    defaultValue?: boolean;
     load?: (file: string, from: string) => Promise<any>;
 }
 
@@ -31,9 +32,9 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     const config: Import = {
         ...rootOptions,
+        default: rootOptions.defaultValue,
         root: ":host",
         from,
-        default: true,
     };
 
     let subtest: RegExpMatchArray;

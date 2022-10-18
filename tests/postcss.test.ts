@@ -6,7 +6,9 @@ import { readFile, writeFile } from "fs/promises";
 
 test("result autoprefix", async () => {
     const result = await postcss([
-        postcssTokens({ prefix: "my-dsprefix" }),
+        postcssTokens({
+            prefix: "my-dsprefix",
+        }),
     ]).process(
         `
         :host{
@@ -69,12 +71,16 @@ test("result host", async () => {
 
 test("result file yaml", async () => {
     const result = await postcss([
-        postcssTokens({ prefix: "my-dsprefix" }),
+        postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
     ]).process(`@tokens "./tokens.yaml" (use: "size|font|color.primary");`, {
         from: "./tests/demo.css",
     });
 
-    assert.is(result.css, await readFile("./tests/expect-use.txt", "utf8"));
+    // await writeFile("./tests/expect-use-default.txt", result.css);
+    assert.is(
+        result.css,
+        await readFile("./tests/expect-use-default.txt", "utf8")
+    );
 });
 
 test.run();
