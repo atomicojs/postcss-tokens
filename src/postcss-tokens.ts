@@ -6,7 +6,7 @@ interface Import {
     prefix?: string;
     root: string;
     from: string;
-    use?: string;
+    filter?: string;
     import?: string;
     default?: boolean;
     variation?: string;
@@ -48,9 +48,13 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
         config[index] = lastValue;
     }
 
+    atRule.walkDecls(({ prop, value }) => {
+        config[prop] = value;
+    });
+
     if (!config.prefix) return;
 
-    if (!config.use && config.import) config.use = config.import;
+    if (!config.filter && config.import) config.filter = config.import;
 
     const dirname = path.dirname(file);
 
@@ -59,7 +63,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
         file
     );
 
-    const rootTokens = filterTokens(mapTokens(tokens, config), config.use);
+    const rootTokens = filterTokens(mapTokens(tokens, config), config.filter);
 
     if (config.root === ":root") {
         currentRoot = rootTokens;
@@ -74,7 +78,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
         const prefixVariation = prop.replace(/[^\w]+/g, "-");
         const variationTokens = filterTokens(
             mapTokens(value, config),
-            config.use
+            config.filter
         );
 
         const prefix = config.prefix + `-` + prefixVariation;

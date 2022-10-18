@@ -62,7 +62,7 @@ test("result host", async () => {
 test("result host", async () => {
     const result = await postcss([
         postcssTokens({ prefix: "my-dsprefix" }),
-    ]).process(`@tokens "./tokens.json" (use: "size|font|color.primary");`, {
+    ]).process(`@tokens "./tokens.json" (filter: "size|font|color.primary");`, {
         from: "./tests/demo.css",
     });
 
@@ -72,7 +72,7 @@ test("result host", async () => {
 test("result file yaml", async () => {
     const result = await postcss([
         postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
-    ]).process(`@tokens "./tokens.yaml" (use: "size|font|color.primary");`, {
+    ]).process(`@tokens "./tokens.yaml" (filter: "size|font|color.primary");`, {
         from: "./tests/demo.css",
     });
 
@@ -80,6 +80,22 @@ test("result file yaml", async () => {
     assert.is(
         result.css,
         await readFile("./tests/expect-use-default.txt", "utf8")
+    );
+});
+
+test("new import", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
+    ]).process(
+        `
+        @tokens "./tokens.yaml" {
+            filter: size , font, color.primary;
+            import: size , font, color.primary;
+        };
+    `,
+        {
+            from: "./tests/demo.css",
+        }
     );
 });
 
