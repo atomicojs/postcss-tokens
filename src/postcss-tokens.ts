@@ -2,6 +2,8 @@ import path from "path";
 import postcss, { PluginCreator, AtRule } from "postcss";
 import { load } from "./load";
 
+const REG_VARIATION = /(\.){0,1}(\w+)=(\w+|"[\w+-]+")/;
+
 interface Import {
     prefix?: string;
     root: string;
@@ -159,6 +161,7 @@ function mapTokens(tokens: any, config: Import, root = {}, parent?: string) {
 function filterTokens(tokens: any, filter: string) {
     if (!filter) return tokens;
     let nextTokens = {};
+
     const mod: [RegExp, string][] = [
         [/\s/g, ""],
         [/\{/g, "("],
@@ -167,7 +170,7 @@ function filterTokens(tokens: any, filter: string) {
         [/\./g, "\\."],
     ];
 
-    let regtExp = RegExp(
+    let regExp = RegExp(
         `^(${mod.reduce(
             (filter, [reg, replace]) => filter.replace(reg, replace),
             filter.replace(/\s+/g, "")
@@ -175,7 +178,7 @@ function filterTokens(tokens: any, filter: string) {
     );
 
     for (let prop in tokens) {
-        if (regtExp.test(prop)) {
+        if (regExp.test(prop.replace(REG_VARIATION, "").replace(/^\./, ""))) {
             nextTokens[prop] = tokens[prop];
         }
     }
@@ -203,20 +206,15 @@ function customProperties(
         let variation = "root";
         let cssPropProxy = "";
 
-        prop = prop.replace(
-            /(\.){0,1}(\w+)=(\w+|"[\w+-]+")/,
-            (all, dot = "", name, value) => {
-                value = value.replace(/"|'/g, "");
-                const isTrue = value === "true";
-                cssPropProxy = "--" + name + (isTrue ? "" : "-" + value);
-                if (isHost) {
-                    variation = `[${name}${
-                        value === "true" ? "" : `=${value}`
-                    }]`;
-                }
-                return "";
+        prop = prop.replace(REG_VARIATION, (all, dot = "", name, value) => {
+            value = value.replace(/"|'/g, "");
+            const isTrue = value === "true";
+            cssPropProxy = "--" + name + (isTrue ? "" : "-" + value);
+            if (isHost) {
+                variation = `[${name}${value === "true" ? "" : `=${value}`}]`;
             }
-        );
+            return "";
+        });
 
         if (!rules[variation]) rules[variation] = [];
 

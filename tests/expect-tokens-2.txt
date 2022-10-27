@@ -1,0 +1,31 @@
+
+:host{
+   --generic-font-size: var(--my-dsprefix--generic-font-size, 1rem);
+   --generic-space-around: var(--my-dsprefix--generic-space-around, 1rem);
+   --generic-space-between: var(--my-dsprefix--generic-space-between, 1rem);
+   --generic-space-safe: var(--my-dsprefix--generic-space-safe, .4rem);
+   --generic-size-icon: var(--my-dsprefix--generic-size-icon, .85em);
+   --generic-size-height: var(--my-dsprefix--generic-size-height, 2.5rem);
+   --generic-radius-rounded: var(--my-dsprefix--generic-radius-rounded, .5rem);
+   --generic-radius-circle: var(--my-dsprefix--generic-radius-circle, 5rem);
+   --generic-color-fill: var(--my-dsprefix--generic-color-fill, white);
+   --generic-color-neutral: var(--my-dsprefix--generic-color-neutral, rgba(0,0,0,.25));
+   --generic-color-accent: var(--my-dsprefix--generic-color-accent, black);
+   --generic-color-border-on: var(--my-dsprefix--generic-color-border-on, var(--color-accent));
+   --generic-color-border-off: var(--my-dsprefix--generic-color-border-off, var(--color-neutral));
+   --generic-color-background-off: var(--my-dsprefix--generic-color-background-off, var(--color-fill));
+   --generic-color-background-on: var(--my-dsprefix--generic-color-background-on, var(--color-fill));
+   --generic-color-content-off: var(--my-dsprefix--generic-color-content-off, transparent);
+   --generic-color-content-on: var(--my-dsprefix--generic-color-content-on, var(--color-fill));
+   --generic-color-state-off: var(--my-dsprefix--generic-color-state-off, transparent);
+   --generic-color-state-on: var(--my-dsprefix--generic-color-state-on, var(--color-accent))
+}
+
+:host([size=small]){
+   --generic-font-size: var(--my-dsprefix--generic-font-size--size-small, .5rem);
+   --generic-space-around: var(--my-dsprefix--generic-space-around--size-small, .5rem);
+   --generic-space-between: var(--my-dsprefix--generic-space-between--size-small, .5rem);
+   --generic-size-height: var(--my-dsprefix--generic-size-height--size-small, 2rem);
+   --generic-radius-rounded: var(--my-dsprefix--generic-radius-rounded--size-small, .25rem);
+   --generic-radius-circle: var(--my-dsprefix--generic-radius-circle--size-small, 5rem)
+}

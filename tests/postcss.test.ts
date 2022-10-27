@@ -101,4 +101,18 @@ test("new import", async () => {
     );
 });
 
+test("result file 2 yaml", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
+    ]).process(`@tokens "./tokens-2.yaml" (filter: generic);`, {
+        from: "./tests/demo.css",
+    });
+
+    await writeFile("./tests/expect-tokens-2.txt", result.css);
+    assert.is(
+        result.css,
+        await readFile("./tests/expect-tokens-2.txt", "utf8")
+    );
+});
+
 test.run();

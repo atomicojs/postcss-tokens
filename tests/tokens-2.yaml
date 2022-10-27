@@ -1,0 +1,48 @@
+generic:
+    font:
+        size: 1rem
+    space:
+        around: 1rem
+        between: 1rem
+        safe: .4rem
+    size:
+        icon: .85em
+        height: 2.5rem
+    radius:
+        rounded: .5rem
+        circle: 5rem
+    color:
+        fill: white
+        neutral: rgba(0,0,0,.25)
+        accent: black
+        border:
+            on: $color.accent
+            off: $color.neutral
+        background:
+            off: $color.fill
+            on: $color.fill
+        content:
+            off: transparent
+            on: $color.fill
+        state:
+            off: transparent
+            on: $color.accent
+state:
+    disabled:
+        opacity: .5
+    focused:
+        outline:
+            width: 1px
+            style: solid
+[size=small]:
+    generic:
+        font:
+            size: .5rem
+        space:
+            around: .5rem
+            between: .5rem
+        size:
+            height: 2rem
+        radius:
+            rounded: .25rem
+            circle: 5rem
