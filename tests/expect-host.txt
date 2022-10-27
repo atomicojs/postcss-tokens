@@ -62,7 +62,7 @@
 }
 
 :host([size=small]){
-   --font-size: var(--my-dsprefix-size-small--font-size);
+   --font-size: var(--my-dsprefix--font-size--size-small);
    --size-xl: calc(var(--size) * 8);
    --size-l: calc(var(--size) * 7);
    --size-m: calc(var(--size) * 5);

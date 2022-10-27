@@ -55,7 +55,7 @@ test("result host", async () => {
             from: "./tests/demo.css",
         }
     );
-    // await writeFile("./tests/expect-root.txt", result.css);
+    //await writeFile("./tests/expect-root.txt", result.css);
     assert.is(result.css, await readFile("./tests/expect-root.txt", "utf8"));
 });
 
@@ -66,13 +66,15 @@ test("result host", async () => {
         from: "./tests/demo.css",
     });
 
+    // await writeFile("./tests/expect-use.txt", result.css);
+
     assert.is(result.css, await readFile("./tests/expect-use.txt", "utf8"));
 });
 
 test("result file yaml", async () => {
     const result = await postcss([
         postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
-    ]).process(`@tokens "./tokens.yaml" (filter: "size|font|color.primary");`, {
+    ]).process(`@tokens "./tokens.yaml";`, {
         from: "./tests/demo.css",
     });
 

@@ -59,9 +59,9 @@
    --my-dsprefix--transition-action: .2s ease all;
    --my-dsprefix--shadow-layer: 0px 12px 22px rgba(0,0,0 ,.05);
    --my-dsprefix--vars-x: var(--my-dsprefix--vars-x, var(--my-dsprefix--size));
-   --my-dsprefix-size-small--font-size: 0.875rem;
-   --my-dsprefix-size-small--size-xl: calc(var(--my-dsprefix-size-small--size) * 8);
-   --my-dsprefix-size-small--size-l: calc(var(--my-dsprefix-size-small--size) * 7);
-   --my-dsprefix-size-small--size-m: calc(var(--my-dsprefix-size-small--size) * 5);
-   --my-dsprefix-size-small--size-s: calc(var(--my-dsprefix-size-small--size) * 3.5)
+   --my-dsprefix--font-size--size-small: 0.875rem;
+   --my-dsprefix--size-xl--size-small: calc(var(--my-dsprefix--size) * 8);
+   --my-dsprefix--size-l--size-small: calc(var(--my-dsprefix--size) * 7);
+   --my-dsprefix--size-m--size-small: calc(var(--my-dsprefix--size) * 5);
+   --my-dsprefix--size-s--size-small: calc(var(--my-dsprefix--size) * 3.5)
 }

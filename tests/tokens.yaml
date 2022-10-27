@@ -79,12 +79,11 @@ transition:
     action: ".2s ease all"
 shadow:
     layer: 0px 12px 22px rgba(0,0,0 ,.05)
-variation:
-    size=small:
-        font:
-            size: 0.875rem
-        size:
-            xl: calc(@size * 8)
-            l: calc(@size * 7)
-            m: calc(@size * 5)
-            s: calc(@size * 3.5)
+size=small:
+    font:
+        size: 0.875rem
+    size:
+        xl: calc(@size * 8)
+        l: calc(@size * 7)
+        m: calc(@size * 5)
+        s: calc(@size * 3.5)
