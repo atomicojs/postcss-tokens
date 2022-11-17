@@ -228,7 +228,7 @@ function customProperties(
         }
 
         const cssValue = (value + "").replace(
-            /(@|\$)([\w\.]+)/g,
+            /(@|\$\$|\$)([\w\.]+)/g,
             (all, type: string, prop: string) => {
                 const cssValue = `--${dotToDash(prop)}`;
                 const cssVar = isHost
