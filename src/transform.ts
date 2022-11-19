@@ -83,7 +83,7 @@ const customProperty = ({
 
     if (onlyProperty) return rootProp;
 
-    const nextValue = value.replace(
+    const nextValue = `${value}`.replace(
         /(\$(?:\$){0,1})([^\s$]+)/g,
         (all, type, mapProp) => {
             mapProp = mapProp.replace(/\./g, "-", map);
