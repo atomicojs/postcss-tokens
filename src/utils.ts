@@ -1,13 +1,17 @@
 export const objectToCssProps = (
     data: Record<string, string>,
-    { prefix = "  ", filter = "", import: _import = "" } = {}
+    {
+        prefix = "  ",
+        filter = "",
+        import: _import = false,
+    }: {
+        prefix?: string;
+        filter?: string;
+        import?: RegExp | false;
+    } = {}
 ) => {
     const match = filter
         ? RegExp(`^(${filter.replace(/\./g, "-").replace(/ *, */g, "|")})`)
-        : false;
-
-    const replaceImport = _import
-        ? RegExp(`^${_import.replace(/\./, "-")}-*`)
         : false;
 
     return Object.entries(data)
@@ -15,7 +19,7 @@ export const objectToCssProps = (
         .map(
             ([index, value]) =>
                 `${prefix || ""}${
-                    replaceImport ? index.replace(replaceImport, "") : index
+                    _import ? index.replace(_import, "") : index
                 }: ${value}`
         )
         .join(";\n");

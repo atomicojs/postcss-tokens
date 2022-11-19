@@ -1,6 +1,7 @@
 :root {
   --my-dsprefix--font-size: 1rem;
   --my-dsprefix--font-family: unset;
+  --my-dsprefix--font-smal: var(--font-size);
   --my-dsprefix--border-radius: .5rem;
   --my-dsprefix--border-width: 1px;
   --my-dsprefix--opacity-unselect: .25;

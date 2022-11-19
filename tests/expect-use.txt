@@ -1,6 +1,7 @@
 :host {
     --font-size: var(--my-dsprefix--font-size);
     --font-family: var(--my-dsprefix--font-family);
+    --font-smal: var(--font-size);
     --size-: var(--my-dsprefix--size);
     --size-xl: calc(var(--size) * 10);
     --size-l: calc(var(--size) * 8);

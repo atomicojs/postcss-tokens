@@ -1,6 +1,7 @@
 :host {
     --font-size: var(--my-dsprefix--font-size);
     --font-family: var(--my-dsprefix--font-family);
+    --font-smal: var(--font-size);
     --border-radius: var(--my-dsprefix--border-radius);
     --border-width: var(--my-dsprefix--border-width);
     --opacity-unselect: var(--my-dsprefix--opacity-unselect);

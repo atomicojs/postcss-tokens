@@ -55,6 +55,7 @@ const customProperty = ({
     withDefault,
     onlyProperty,
     onlyValue,
+    import: _import,
 }: {
     prefix: string;
     root: string;
@@ -63,6 +64,7 @@ const customProperty = ({
     withDefault?: boolean;
     onlyProperty?: boolean;
     onlyValue?: boolean;
+    import?: RegExp | false;
 }) => {
     const mapRoot = isMatch.test(root)
         ? root === ":host"
@@ -85,11 +87,11 @@ const customProperty = ({
 
     const nextValue = `${value}`.replace(
         /(\$(?:\$){0,1})([^\s$]+)/g,
-        (all, type, mapProp) => {
-            mapProp = mapProp.replace(/\./g, "-", map);
+        (all, type: string, mapProp: string) => {
+            mapProp = mapProp.replace(/\./g, "-");
             return `var(${(type == "$"
                 ? ["", prefix, mapProp]
-                : ["", mapProp]
+                : ["", _import ? mapProp.replace(_import, "") : mapProp]
             ).join("--")})`;
         }
     );
@@ -108,12 +110,14 @@ export function transform(
         root,
         shadowDom = root === ":host",
         withDefault,
+        import: _import,
     }: {
         data: Record<string, any>;
         prefix: string;
         root: string;
         shadowDom?: boolean;
         withDefault?: boolean;
+        import?: RegExp | false;
     },
     results = {} as Record<string, Record<string, string>>,
     parent = ""
@@ -138,6 +142,7 @@ export function transform(
                         }]${operator ? ")" : ""}`
                     ),
                     withDefault,
+                    import: _import,
                 },
                 results,
                 parent
@@ -150,6 +155,7 @@ export function transform(
                     prefix,
                     root,
                     withDefault,
+                    import: _import,
                 },
                 results,
                 join(parent, prop)
@@ -164,6 +170,7 @@ export function transform(
                     prop: id,
                     value,
                     withDefault,
+                    import: _import,
                 });
             } else {
                 results[root][

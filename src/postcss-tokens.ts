@@ -1,5 +1,5 @@
 import path from "path";
-import postcss, { PluginCreator, AtRule, rule } from "postcss";
+import postcss, { PluginCreator, AtRule } from "postcss";
 import { load } from "./load";
 import { transform } from "./transform";
 import { objectToCssProps, cssRule, cleanQuote } from "./utils";
@@ -60,11 +60,16 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     const data = await load(path.join(dirname, config.from), file);
 
+    const _import = config.import
+        ? RegExp(`^${config.import.replace(/\./, "-")}-*`)
+        : false;
+
     const tokens = transform({
         data,
         prefix: config.prefix,
         root: config.root,
         withDefault: config.default,
+        import: _import,
     });
 
     const rootRules: string[] = [];
@@ -79,7 +84,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
                     objectToCssProps(tokens[prop], {
                         prefix: "    --",
                         filter: config.filter,
-                        import: config.import,
+                        import: _import,
                     })
                 )
             );
