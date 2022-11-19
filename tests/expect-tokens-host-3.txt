@@ -1,0 +1,12 @@
+:host {
+    --color-fill: var(--my-dsprefix--color-fill, red)
+}
+:host([color="success"]) {
+    --color-fill: var(--my-dsprefix--color--success--fill, white)
+}
+:host([color="success"][ghost]) {
+    --color-fill: var(--my-dsprefix--color--success--ghost--fill, black)
+}
+:host([color="success"][ghost]:not([color="ok"])) {
+    --color-fill: var(--my-dsprefix--color--success--ghost--not--ok--fill, white)
+}

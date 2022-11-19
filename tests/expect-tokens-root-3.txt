@@ -1,0 +1,6 @@
+:root {
+  --my-dsprefix--color-fill: red;
+  --my-dsprefix--color--success--fill: white;
+  --my-dsprefix--color--success--ghost--fill: black;
+  --my-dsprefix--color--success--ghost--not--ok--fill: white
+}

@@ -1,8 +1,8 @@
 import path from "path";
-import postcss, { PluginCreator, AtRule } from "postcss";
+import postcss, { PluginCreator, AtRule, rule } from "postcss";
 import { load } from "./load";
-
-const REG_VARIATION = /(\.){0,1}(\w+)=(\w+|"[\w+-]+")/;
+import { transform } from "./transform";
+import { filter, objectToCssProps, cssRule, cleanQuote } from "./utils";
 
 interface Import {
     prefix?: string;
@@ -60,30 +60,35 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 
     const dirname = path.dirname(file);
 
-    const tokens = await load(path.join(dirname, config.from), file);
+    const data = await load(path.join(dirname, config.from), file);
 
-    const rootTokens = filterTokens(mapTokens(tokens, config), config.filter);
+    const tokens = transform({
+        data,
+        prefix: config.prefix,
+        root: config.root,
+        withDefault: config.default,
+    });
 
-    if (config.root === ":root") {
-        currentRoot = rootTokens;
-    }
-
+    const rootRules: string[] = [];
     const rules: string[] = [];
 
-    let { root, ...variations } = customProperties(rootTokens, config);
-
-    rules.push(cssRule(`${config.root}`, root));
-
-    for (let prop in variations) {
-        rules.push(
-            cssRule(
-                `${config.root}${config.root === ":host" ? `(${prop})` : prop}`,
-                variations[prop]
-            )
-        );
+    for (const prop in tokens) {
+        if (config.root === ":host") {
+            const selector = prop === ":host" ? prop : `:host(${prop})`;
+            rules.push(
+                cssRule(selector, objectToCssProps(tokens[prop], "    --"))
+            );
+        } else {
+            rootRules.push(objectToCssProps(tokens[prop]));
+        }
     }
 
-    atRule.replaceWith(rules.map(postcss.parse as any));
+    atRule.replaceWith(
+        (rootRules.length
+            ? [cssRule(config.root, rootRules.join(";\n"))]
+            : rules
+        ).map(postcss.parse as any)
+    );
 }
 
 const postcssTokens: PluginCreator<Options> = (options: Options) => ({
@@ -91,29 +96,27 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     AtRule: {
         tokens: (atRule) => {
             if (options?.prefix && atRule.parent.type === "rule") {
-                let tokens = currentRoot
-                    ? filterTokens(
-                          currentRoot,
-                          atRule.params.replace(/\s+/g, "")
-                      )
-                    : atRule.params
-                          .split(",")
-                          .map((value) => value.trim())
-                          .reduce((decl, prop) => {
-                              decl[prop] = `$${prop}`;
-                              return decl;
-                          }, {});
-
-                const decl = postcss.parse(
-                    customProperties(tokens, {
-                        root: ":host",
-                        prefix: options.prefix,
-                        from: "",
-                        wrapper: true,
-                    }).root.join(";\n")
-                );
-
-                atRule.replaceWith(decl);
+                // let tokens = currentRoot
+                //     ? filterTokens(
+                //           currentRoot,
+                //           atRule.params.replace(/\s+/g, "")
+                //       )
+                //     : atRule.params
+                //           .split(",")
+                //           .map((value) => value.trim())
+                //           .reduce((decl, prop) => {
+                //               decl[prop] = `$${prop}`;
+                //               return decl;
+                //           }, {});
+                // const decl = postcss.parse(
+                //     customProperties(tokens, {
+                //         root: ":host",
+                //         prefix: options.prefix,
+                //         from: "",
+                //         wrapper: true,
+                //     }).root.join(";\n")
+                // );
+                // atRule.replaceWith(decl);
             } else {
                 return replace(atRule, {
                     ...options,
@@ -131,134 +134,5 @@ const postcssTokens: PluginCreator<Options> = (options: Options) => ({
 });
 
 postcssTokens.postcss = true;
-
-const cssRule = (selector: string, cssProps: string[]) =>
-    `\n${selector}{\n${cssProps
-        .map((cssProp) => `   ${cssProp}`)
-        .join(";\n")}\n}`;
-
-const dotToDash = (value: string) =>
-    value.replace(/^\./, "").replace(/\./g, `-`);
-
-const cleanQuote = (value: string) => value.replace(/^("|')(.+)("|')$/g, "$2");
-
-function mapTokens(tokens: any, config: Import, root = {}, parent?: string) {
-    for (let prop in tokens) {
-        const value = tokens[prop];
-
-        prop = prop === "=" ? "" : prop;
-
-        let parentProp = (parent ? parent + (prop ? "." : "") : "") + prop;
-        if (typeof value === "object") {
-            mapTokens(value, config, root, parentProp);
-        } else {
-            root[parentProp] = value;
-        }
-    }
-    return root;
-}
-
-function filterTokens(tokens: any, filter: string) {
-    if (!filter) return tokens;
-    let nextTokens = {};
-
-    const mod: [RegExp, string][] = [
-        [/\s/g, ""],
-        [/\{/g, "("],
-        [/\}/g, ")"],
-        [/\,/g, "|"],
-        [/\./g, "\\."],
-    ];
-
-    let regExp = RegExp(
-        `^(${mod.reduce(
-            (filter, [reg, replace]) => filter.replace(reg, replace),
-            filter.replace(/\s+/g, "")
-        )})`
-    );
-
-    for (let prop in tokens) {
-        if (regExp.test(prop.replace(REG_VARIATION, "").replace(/^\./, ""))) {
-            nextTokens[prop] = tokens[prop];
-        }
-    }
-
-    return nextTokens;
-}
-
-function customProperties(
-    tokens: any,
-    config: Import,
-    rules: {
-        [prop: string]: string[];
-    } = {
-        root: [],
-    }
-) {
-    let isHost = config.root === ":host" ? true : false;
-    let regImport = config.import
-        ? RegExp(`^--${config.import}.`.replace(/\./g, "\\-"))
-        : "";
-
-    for (let prop in tokens) {
-        const value = tokens[prop];
-
-        let variation = "root";
-        let cssPropProxy = "";
-
-        prop = prop.replace(REG_VARIATION, (all, dot = "", name, value) => {
-            value = value.replace(/"|'/g, "");
-            const isTrue = value === "true";
-            cssPropProxy = "--" + name + (isTrue ? "" : "-" + value);
-            if (isHost) {
-                variation = `[${name}${value === "true" ? "" : `=${value}`}]`;
-            }
-            return "";
-        });
-
-        if (!rules[variation]) rules[variation] = [];
-
-        let cssProp = `--` + dotToDash(prop);
-
-        if (config.wrapper) {
-            rules[variation].push(
-                `${cssProp}: var(--${config.prefix}${cssProp})`
-            );
-            continue;
-        }
-
-        const cssValue = (value + "").replace(
-            /(@|\$\$|\$)([\w\.]+)/g,
-            (all, type: string, prop: string) => {
-                const cssValue = `--${dotToDash(prop)}`;
-                const cssVar = isHost
-                    ? `var(${cssValue})`
-                    : `var(--${config.prefix}${cssValue})`;
-                return type === "$"
-                    ? `var(--${config.prefix}${cssProp}, ${cssVar})`
-                    : cssVar;
-            }
-        );
-
-        const refCssProp =
-            isHost && value === cssValue && !config.wrapper
-                ? `var(--${config.prefix}${cssProp}${cssPropProxy}${
-                      config.default ? `, ${cssValue}` : ""
-                  })`
-                : cssValue;
-
-        rules[variation].push(
-            `${
-                isHost
-                    ? regImport
-                        ? cssProp.replace(regImport, "--")
-                        : cssProp
-                    : `--${config.prefix}${cssProp}${cssPropProxy}`
-            }: ${refCssProp}`
-        );
-    }
-
-    return rules;
-}
 
 export default postcssTokens;
