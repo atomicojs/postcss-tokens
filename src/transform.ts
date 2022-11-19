@@ -89,10 +89,10 @@ const customProperty = ({
         /(\$(?:\$){0,1})([^\s$]+)/g,
         (all, type: string, mapProp: string) => {
             mapProp = mapProp.replace(/\./g, "-");
-            return `var(${(type == "$"
-                ? ["", prefix, mapProp]
-                : ["", _import ? mapProp.replace(_import, "") : mapProp]
-            ).join("--")})`;
+            mapProp = _import ? mapProp.replace(_import, "") : mapProp;
+            return `var(${(type == "$" ? map : ["", mapProp]).join("--")}${
+                type == "$" ? `, var(${["", mapProp].join("--")})` : ""
+            })`;
         }
     );
 

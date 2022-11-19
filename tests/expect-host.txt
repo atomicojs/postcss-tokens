@@ -7,7 +7,7 @@
     --opacity-unselect: var(--my-dsprefix--opacity-unselect);
     --opacity-unfocus: var(--my-dsprefix--opacity-unfocus);
     --opacity-disabled: var(--my-dsprefix--opacity-disabled);
-    --size-: var(--my-dsprefix--size);
+    --size: var(--my-dsprefix--size);
     --size-xl: calc(var(--size) * 10);
     --size-l: calc(var(--size) * 8);
     --size-m: calc(var(--size) * 7);
@@ -58,7 +58,7 @@
     --tab-radius: var(--my-dsprefix--tab-radius);
     --transition-action: var(--my-dsprefix--transition-action);
     --shadow-layer: var(--my-dsprefix--shadow-layer);
-    --vars-x: var(--my-dsprefix--size)
+    --vars-x: var(--my-dsprefix--vars-x, var(--size))
 }
 :host([size="small"]) {
     --font-size: var(--my-dsprefix--size--small--font);

@@ -10,7 +10,7 @@ opacity:
     unfocus: ".5"
     disabled: ".5"
 size:
-    "": 4px
+    =: 4px
     xl: calc($$size * 10)
     l: calc($$size * 8)
     m: calc($$size * 7)

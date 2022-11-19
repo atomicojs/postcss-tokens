@@ -6,7 +6,7 @@
     --opacity-unselect: var(--my-dsprefix--opacity-unselect, .25);
     --opacity-unfocus: var(--my-dsprefix--opacity-unfocus, .5);
     --opacity-disabled: var(--my-dsprefix--opacity-disabled, .5);
-    --size-: var(--my-dsprefix--size, 4px);
+    --size: var(--my-dsprefix--size, 4px);
     --size-xl: calc(var(--size) * 10);
     --size-l: calc(var(--size) * 8);
     --size-m: calc(var(--size) * 7);

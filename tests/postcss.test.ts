@@ -87,7 +87,7 @@ test("new import", async () => {
 test("result file 2 yaml", async () => {
     const result = await postcss([
         postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
-    ]).process(`@tokens "./tokens-2.yaml" (filter: generic);`, {
+    ]).process(`@tokens "./tokens-2.yaml" (import: generic);`, {
         from: "./tests/demo.css",
     });
 
