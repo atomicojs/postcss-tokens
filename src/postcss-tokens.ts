@@ -2,7 +2,7 @@ import path from "path";
 import postcss, { PluginCreator, AtRule, rule } from "postcss";
 import { load } from "./load";
 import { transform } from "./transform";
-import { filter, objectToCssProps, cssRule, cleanQuote } from "./utils";
+import { objectToCssProps, cssRule, cleanQuote } from "./utils";
 
 interface Import {
     prefix?: string;
@@ -20,8 +20,6 @@ interface Options {
     defaultValue?: boolean;
     load?: (file: string, from: string) => Promise<any>;
 }
-
-let currentRoot: { [prop: string]: string };
 
 async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     const file = atRule.source.input.file;
@@ -81,6 +79,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
                     objectToCssProps(tokens[prop], {
                         prefix: "    --",
                         filter: config.filter,
+                        import: config.import,
                     })
                 )
             );
