@@ -76,7 +76,13 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
         if (config.root === ":host") {
             const selector = prop === ":host" ? prop : `:host(${prop})`;
             rules.push(
-                cssRule(selector, objectToCssProps(tokens[prop], "    --"))
+                cssRule(
+                    selector,
+                    objectToCssProps(tokens[prop], {
+                        prefix: "    --",
+                        filter: config.filter,
+                    })
+                )
             );
         } else {
             rootRules.push(objectToCssProps(tokens[prop]));
@@ -94,42 +100,17 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
 const postcssTokens: PluginCreator<Options> = (options: Options) => ({
     postcssPlugin: "@atomico/postcss-tokens",
     AtRule: {
-        tokens: (atRule) => {
-            if (options?.prefix && atRule.parent.type === "rule") {
-                // let tokens = currentRoot
-                //     ? filterTokens(
-                //           currentRoot,
-                //           atRule.params.replace(/\s+/g, "")
-                //       )
-                //     : atRule.params
-                //           .split(",")
-                //           .map((value) => value.trim())
-                //           .reduce((decl, prop) => {
-                //               decl[prop] = `$${prop}`;
-                //               return decl;
-                //           }, {});
-                // const decl = postcss.parse(
-                //     customProperties(tokens, {
-                //         root: ":host",
-                //         prefix: options.prefix,
-                //         from: "",
-                //         wrapper: true,
-                //     }).root.join(";\n")
-                // );
-                // atRule.replaceWith(decl);
-            } else {
-                return replace(atRule, {
-                    ...options,
-                    async load(file, from) {
-                        let data: any;
-                        if (options?.load) {
-                            data = await options.load(file, from);
-                        }
-                        return data ? data : load(file);
-                    },
-                });
-            }
-        },
+        tokens: (atRule) =>
+            replace(atRule, {
+                ...options,
+                async load(file, from) {
+                    let data: any;
+                    if (options?.load) {
+                        data = await options.load(file, from);
+                    }
+                    return data ? data : load(file);
+                },
+            }),
     },
 });
 

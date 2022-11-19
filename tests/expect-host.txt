@@ -1,70 +1,68 @@
-
-:host{
-   --font-size: var(--my-dsprefix--font-size);
-   --font-family: var(--my-dsprefix--font-family);
-   --border-radius: var(--my-dsprefix--border-radius);
-   --border-width: var(--my-dsprefix--border-width);
-   --opacity-unselect: var(--my-dsprefix--opacity-unselect);
-   --opacity-unfocus: var(--my-dsprefix--opacity-unfocus);
-   --opacity-disabled: var(--my-dsprefix--opacity-disabled);
-   --size: var(--my-dsprefix--size);
-   --size-xl: calc(var(--size) * 10);
-   --size-l: calc(var(--size) * 8);
-   --size-m: calc(var(--size) * 7);
-   --size-s: calc(var(--size) * 5);
-   --size-xs: calc(var(--size) * 4);
-   --size-xxs: calc(var(--size) * 3);
-   --color-primary-10: var(--my-dsprefix--color-primary-10);
-   --color-primary-30: var(--my-dsprefix--color-primary-30);
-   --color-primary-60: var(--my-dsprefix--color-primary-60);
-   --color-action-10: var(--color-primary-60);
-   --color-action-30: var(--my-dsprefix--color-action-30);
-   --color-action-60: var(--my-dsprefix--color-action-60);
-   --color-toggle-10: var(--color-primary-10);
-   --color-toggle-30: var(--color-primary-30);
-   --color-toggle-60: var(--color-primary-60);
-   --color-layer-10: var(--color-primary-60);
-   --color-layer-30: var(--my-dsprefix--color-layer-30);
-   --color-layer-60: var(--my-dsprefix--color-layer-60);
-   --color-scroll-10: var(--color-neutral-10);
-   --color-scroll-30: var(--my-dsprefix--color-scroll-30);
-   --color-scroll-60: var(--my-dsprefix--color-scroll-60);
-   --color-input-10: var(--color-action-10);
-   --color-input-30: var(--color-action-30);
-   --color-input-60: var(--color-action-60);
-   --color-button-10: var(--color-action-10);
-   --color-button-30: var(--color-action-30);
-   --color-button-60: var(--color-action-60);
-   --color-success-10: var(--my-dsprefix--color-success-10);
-   --color-success-30: var(--my-dsprefix--color-success-30);
-   --color-success-60: var(--my-dsprefix--color-success-60);
-   --color-info-10: var(--my-dsprefix--color-info-10);
-   --color-info-30: var(--my-dsprefix--color-info-30);
-   --color-info-60: var(--my-dsprefix--color-info-60);
-   --color-warning-10: var(--my-dsprefix--color-warning-10);
-   --color-warning-30: var(--my-dsprefix--color-warning-30);
-   --color-warning-60: var(--my-dsprefix--color-warning-60);
-   --color-danger-10: var(--my-dsprefix--color-danger-10);
-   --color-danger-30: var(--my-dsprefix--color-danger-30);
-   --color-danger-60: var(--my-dsprefix--color-danger-60);
-   --color-neutral-10: var(--color-primary-60);
-   --color-neutral-30: var(--my-dsprefix--color-neutral-30);
-   --color-neutral-60: var(--my-dsprefix--color-neutral-60);
-   --input-border-width: var(--border-width);
-   --input-border-style: var(--my-dsprefix--input-border-style);
-   --input-border-color: var(--color-input-30);
-   --tab-width: var(--my-dsprefix--tab-width);
-   --tab-height: var(--my-dsprefix--tab-height);
-   --tab-radius: var(--my-dsprefix--tab-radius);
-   --transition-action: var(--my-dsprefix--transition-action);
-   --shadow-layer: var(--my-dsprefix--shadow-layer);
-   --vars-x: var(--my-dsprefix--vars-x, var(--size))
+:host {
+    --font-size: var(--my-dsprefix--font-size);
+    --font-family: var(--my-dsprefix--font-family);
+    --border-radius: var(--my-dsprefix--border-radius);
+    --border-width: var(--my-dsprefix--border-width);
+    --opacity-unselect: var(--my-dsprefix--opacity-unselect);
+    --opacity-unfocus: var(--my-dsprefix--opacity-unfocus);
+    --opacity-disabled: var(--my-dsprefix--opacity-disabled);
+    --size-: var(--my-dsprefix--size);
+    --size-xl: calc(var(--size) * 10);
+    --size-l: calc(var(--size) * 8);
+    --size-m: calc(var(--size) * 7);
+    --size-s: calc(var(--size) * 5);
+    --size-xs: calc(var(--size) * 4);
+    --size-xxs: calc(var(--size) * 3);
+    --color-primary-10: var(--my-dsprefix--color-primary-10);
+    --color-primary-30: var(--my-dsprefix--color-primary-30);
+    --color-primary-60: var(--my-dsprefix--color-primary-60);
+    --color-action-10: var(--color-primary-60);
+    --color-action-30: var(--my-dsprefix--color-action-30);
+    --color-action-60: var(--my-dsprefix--color-action-60);
+    --color-toggle-10: var(--color-primary-10);
+    --color-toggle-30: var(--color-primary-30);
+    --color-toggle-60: var(--color-primary-60);
+    --color-layer-10: var(--color-primary-60);
+    --color-layer-30: var(--my-dsprefix--color-layer-30);
+    --color-layer-60: var(--my-dsprefix--color-layer-60);
+    --color-scroll-10: var(--color-neutral-10);
+    --color-scroll-30: var(--my-dsprefix--color-scroll-30);
+    --color-scroll-60: var(--my-dsprefix--color-scroll-60);
+    --color-input-10: var(--color-action-10);
+    --color-input-30: var(--color-action-30);
+    --color-input-60: var(--color-action-60);
+    --color-button-10: var(--color-action-10);
+    --color-button-30: var(--color-action-30);
+    --color-button-60: var(--color-action-60);
+    --color-success-10: var(--my-dsprefix--color-success-10);
+    --color-success-30: var(--my-dsprefix--color-success-30);
+    --color-success-60: var(--my-dsprefix--color-success-60);
+    --color-info-10: var(--my-dsprefix--color-info-10);
+    --color-info-30: var(--my-dsprefix--color-info-30);
+    --color-info-60: var(--my-dsprefix--color-info-60);
+    --color-warning-10: var(--my-dsprefix--color-warning-10);
+    --color-warning-30: var(--my-dsprefix--color-warning-30);
+    --color-warning-60: var(--my-dsprefix--color-warning-60);
+    --color-danger-10: var(--my-dsprefix--color-danger-10);
+    --color-danger-30: var(--my-dsprefix--color-danger-30);
+    --color-danger-60: var(--my-dsprefix--color-danger-60);
+    --color-neutral-10: var(--color-primary-60);
+    --color-neutral-30: var(--my-dsprefix--color-neutral-30);
+    --color-neutral-60: var(--my-dsprefix--color-neutral-60);
+    --input-border-width: var(--border-width);
+    --input-border-style: var(--my-dsprefix--input-border-style);
+    --input-border-color: var(--color-input-30);
+    --tab-width: var(--my-dsprefix--tab-width);
+    --tab-height: var(--my-dsprefix--tab-height);
+    --tab-radius: var(--my-dsprefix--tab-radius);
+    --transition-action: var(--my-dsprefix--transition-action);
+    --shadow-layer: var(--my-dsprefix--shadow-layer);
+    --vars-x: var(--my-dsprefix--size)
 }
-
-:host([size=small]){
-   --font-size: var(--my-dsprefix--font-size--size-small);
-   --size-xl: calc(var(--size) * 8);
-   --size-l: calc(var(--size) * 7);
-   --size-m: calc(var(--size) * 5);
-   --size-s: calc(var(--size) * 3.5)
+:host([size="small"]) {
+    --font-size: var(--my-dsprefix--size--small--font);
+    --size-xl: calc(var(--size) * 8);
+    --size-l: calc(var(--size) * 7);
+    --size-m: calc(var(--size) * 5);
+    --size-s: calc(var(--size) * 3.5)
 }

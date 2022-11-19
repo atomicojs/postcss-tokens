@@ -1,23 +1,21 @@
-
-:host{
-   --font-size: var(--my-dsprefix--font-size);
-   --font-family: var(--my-dsprefix--font-family);
-   --size: var(--my-dsprefix--size);
-   --size-xl: calc(var(--size) * 10);
-   --size-l: calc(var(--size) * 8);
-   --size-m: calc(var(--size) * 7);
-   --size-s: calc(var(--size) * 5);
-   --size-xs: calc(var(--size) * 4);
-   --size-xxs: calc(var(--size) * 3);
-   --color-primary-10: var(--my-dsprefix--color-primary-10);
-   --color-primary-30: var(--my-dsprefix--color-primary-30);
-   --color-primary-60: var(--my-dsprefix--color-primary-60)
+:host {
+    --font-size: var(--my-dsprefix--font-size);
+    --font-family: var(--my-dsprefix--font-family);
+    --size-: var(--my-dsprefix--size);
+    --size-xl: calc(var(--size) * 10);
+    --size-l: calc(var(--size) * 8);
+    --size-m: calc(var(--size) * 7);
+    --size-s: calc(var(--size) * 5);
+    --size-xs: calc(var(--size) * 4);
+    --size-xxs: calc(var(--size) * 3);
+    --color-primary-10: var(--my-dsprefix--color-primary-10);
+    --color-primary-30: var(--my-dsprefix--color-primary-30);
+    --color-primary-60: var(--my-dsprefix--color-primary-60)
 }
-
-:host([size=small]){
-   --font-size: var(--my-dsprefix--font-size--size-small);
-   --size-xl: calc(var(--size) * 8);
-   --size-l: calc(var(--size) * 7);
-   --size-m: calc(var(--size) * 5);
-   --size-s: calc(var(--size) * 3.5)
+:host([size="small"]) {
+    --font-size: var(--my-dsprefix--size--small--font);
+    --size-xl: calc(var(--size) * 8);
+    --size-l: calc(var(--size) * 7);
+    --size-m: calc(var(--size) * 5);
+    --size-s: calc(var(--size) * 3.5)
 }

@@ -17,10 +17,7 @@
     --generic-color-content-off: var(--my-dsprefix--generic-color-content-off, transparent);
     --generic-color-content-on: var(--my-dsprefix--color-fill);
     --generic-color-state-off: var(--my-dsprefix--generic-color-state-off, transparent);
-    --generic-color-state-on: var(--my-dsprefix--color-accent);
-    --state-disabled-opacity: 0.5;
-    --state-focused-outline-width: var(--my-dsprefix--state-focused-outline-width, 1px);
-    --state-focused-outline-style: var(--my-dsprefix--state-focused-outline-style, solid)
+    --generic-color-state-on: var(--my-dsprefix--color-accent)
 }
 :host([size="small"]) {
     --generic-font-size: var(--my-dsprefix--size--small--generic-font, .5rem);
