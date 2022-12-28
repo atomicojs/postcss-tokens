@@ -161,7 +161,8 @@ export function transform(
                 join(parent, prop)
             );
         } else {
-            const id = prop === "=" ? parent : join(parent, prop);
+            const id =
+                prop === "=" || prop === "value" ? parent : join(parent, prop);
             results[root] = results[root] || {};
             if (shadowDom) {
                 results[root][id] = customProperty({
