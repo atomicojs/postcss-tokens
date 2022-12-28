@@ -1,0 +1,6 @@
+:root {
+  --my-dsprefix--card-border-radius-mobile: var(--my-dsprefix--card-border-radius-mobile, var(--radii-none));
+  --my-dsprefix--card-border-radius-desktop: var(--my-dsprefix--card-border-radius-desktop, var(--radii-sm));
+  --my-dsprefix--card-heading-color: var(--my-dsprefix--card-heading-color, var(--color-font-base));
+  --my-dsprefix--card-text-color: var(--my-dsprefix--card-text-color, var(--color-font-tertiary))
+}

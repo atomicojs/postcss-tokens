@@ -85,17 +85,18 @@ const customProperty = ({
 
     if (onlyProperty) return rootProp;
 
-    const nextValue = `${value}`.replace(
-        /(\$(?:\$){0,1})([^\s$]+)/g,
-        (all, type: string, mapProp: string) => {
-            mapProp = mapProp.replace(/\./g, "-");
-            mapProp = _import ? mapProp.replace(_import, "") : mapProp;
-            return `var(${(type == "$" ? map : ["", mapProp]).join("--")}${
-                type == "$" ? `, var(${["", mapProp].join("--")})` : ""
-            })`;
-        }
-    );
-
+    const nextValue = `${value}`
+        .replace(/\{([^\}]+)\}/, (all, value) => `$${value}`)
+        .replace(
+            /(\$(?:\$){0,1})([^\s$]+)/g,
+            (all, type: string, mapProp: string) => {
+                mapProp = mapProp.replace(/\./g, "-");
+                mapProp = _import ? mapProp.replace(_import, "") : mapProp;
+                return `var(${(type == "$" ? map : ["", mapProp]).join("--")}${
+                    type == "$" ? `, var(${["", mapProp].join("--")})` : ""
+                })`;
+            }
+        );
     return nextValue === value
         ? onlyValue
             ? value

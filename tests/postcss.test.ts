@@ -126,4 +126,18 @@ test("result file tokens-3.yaml (:root)", async () => {
     );
 });
 
+test("style-dictionary", async () => {
+    const result = await postcss([
+        postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
+    ]).process(`@tokens "./style-dictionary.json" (root:":root");`, {
+        from: "./tests/demo.css",
+    });
+
+    await writeFile("./tests/expect-style-dictionary.txt", result.css);
+    assert.is(
+        result.css,
+        await readFile("./tests/expect-style-dictionary.txt", "utf8")
+    );
+});
+
 test.run();
