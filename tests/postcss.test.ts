@@ -128,7 +128,7 @@ test("result file tokens-3.yaml (:root)", async () => {
 
 test("style-dictionary", async () => {
     const result = await postcss([
-        postcssTokens({ prefix: "my-dsprefix", defaultValue: true }),
+        postcssTokens({ prefix: "my-dsprefix" }),
     ]).process(`@tokens "./style-dictionary.json" (root:":root");`, {
         from: "./tests/demo.css",
     });

@@ -86,17 +86,21 @@ const customProperty = ({
     if (onlyProperty) return rootProp;
 
     const nextValue = `${value}`
-        .replace(/\{([^\}]+)\}/, (all, value) => `$${value}`)
+        .replace(/\{([^\}]+)\}/, (all, value) => `$$${value}`)
         .replace(
             /(\$(?:\$){0,1})([^\s$]+)/g,
             (all, type: string, mapProp: string) => {
                 mapProp = mapProp.replace(/\./g, "-");
                 mapProp = _import ? mapProp.replace(_import, "") : mapProp;
-                return `var(${(type == "$" ? map : ["", mapProp]).join("--")}${
+                return `var(${(type == "$"
+                    ? map
+                    : [...(root === ":root" ? ["", prefix] : [""]), mapProp]
+                ).join("--")}${
                     type == "$" ? `, var(${["", mapProp].join("--")})` : ""
                 })`;
             }
         );
+
     return nextValue === value
         ? onlyValue
             ? value
@@ -182,6 +186,7 @@ export function transform(
                         prop: id,
                         value,
                         onlyProperty: true,
+                        withDefault,
                     })
                 ] = customProperty({
                     prefix,
@@ -189,6 +194,7 @@ export function transform(
                     prop: id,
                     value,
                     onlyValue: true,
+                    withDefault,
                 });
             }
         }
