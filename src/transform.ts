@@ -67,7 +67,7 @@ export const transform = (data: Data, options: Options) => {
             rules[selector][`${prefix}${prop}`] =
                 nextValue != value ? nextValue : value;
         } else {
-            rules[selector][`--${props.join("-")}`] =
+            rules[selector][`--${props.join("-").replace(regExp, "")}`] =
                 nextValue != value ? nextValue : `var(${prefix}${prop})`;
         }
     }
