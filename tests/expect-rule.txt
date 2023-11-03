@@ -1,6 +1,0 @@
-
-        :host{
-            @tokens color.primary, font;
-            color: var(--color-title);
-        }
-    
