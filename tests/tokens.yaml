@@ -3,3 +3,7 @@ font:
     family: unset
     (small):
         size: .5rem
+    (^scale=x2):
+        size: 2rem
+        (small):
+            size: 1rem

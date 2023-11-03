@@ -40,9 +40,9 @@ export const transform = (data: Data, options: Options) => {
 
     for (const prop in customProperties) {
         const { value, attrs, props } = customProperties[prop];
-        const selector =
+        const [selector, selectorAttrs] =
             options.scope === ":root"
-                ? options.scope
+                ? [options.scope, []]
                 : getSelector(attrs, options.scope);
 
         if (regExp && !regExp.test(prop)) continue;
@@ -67,8 +67,24 @@ export const transform = (data: Data, options: Options) => {
             rules[selector][`${prefix}${prop}`] =
                 nextValue != value ? nextValue : value;
         } else {
-            rules[selector][`--${props.join("-").replace(regExp, "")}`] =
-                nextValue != value ? nextValue : `var(${prefix}${prop})`;
+            const isHostContext = selector.startsWith(":host-context");
+            if (isHostContext) {
+                const nextProp = selectorAttrs
+                    .map((value) =>
+                        value.replace(/\[/g, "(").replace(/\]/g, ")")
+                    )
+                    .map(customPropertyToHumanName)
+                    .reduce(
+                        (prop, value) => prop.replace(`--${value}`, ""),
+                        prop
+                    );
+
+                rules[selector][`${prefix}${nextProp}`] =
+                    nextValue != value ? nextValue : `var(${prefix}${prop})`;
+            } else {
+                rules[selector][`--${props.join("-").replace(regExp, "")}`] =
+                    nextValue != value ? nextValue : `var(${prefix}${prop})`;
+            }
         }
     }
 
@@ -205,24 +221,37 @@ const createCustomProperties = (
     return customProperties;
 };
 
-function getSelector(attrs: string[], scope: string = ":host") {
-    const selector = attrs
-        .map(getTokens)
-        .flat(1)
-        .map(([attr, exp, value]) => {
+function getSelector(
+    attrs: string[],
+    scope: string = ":host"
+): [string, string[]] {
+    const nextAttrs = attrs.map(getTokens).flat(1);
+
+    const onlyHostContext = nextAttrs.filter(([attr]: string[]) =>
+        attr.startsWith("^")
+    );
+
+    scope = onlyHostContext.length ? ":host-context" : scope;
+
+    const selector = (onlyHostContext.length ? onlyHostContext : nextAttrs).map(
+        ([attr, exp, value]) => {
             if (attr.startsWith("^")) {
-                scope = ":host-context";
                 attr = attr.slice(1);
             }
             return exp === "!="
                 ? `:not([${attr}="${value}"])`
                 : `[${attr}${exp ? `${exp}"${value}"` : ""}]`;
-        })
-        .join("");
+        }
+    );
 
-    return `${scope}${
-        scope.startsWith(":host") && selector ? `(${selector})` : `${selector}`
-    }`;
+    return [
+        `${scope}${
+            scope.startsWith(":host") && selector.length
+                ? `(${selector.join("")})`
+                : `${selector.join("")}`
+        }`,
+        selector,
+    ];
 }
 
 // const data = {
