@@ -37,7 +37,7 @@ test("result file yaml", async () => {
         }
     );
 
-    await writeFile("./tests/expect-use-default.css", result.css);
+    // await writeFile("./tests/expect-use-default.css", result.css);
     assert.is(
         result.css,
         await readFile("./tests/expect-use-default.css", "utf8")
