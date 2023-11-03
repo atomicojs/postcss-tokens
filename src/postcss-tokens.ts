@@ -23,7 +23,7 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
     attrs.replace(
         /([\w]+)\(([^\)]+)\)/g,
         (_: string, attr: string, value: string) => {
-            options[attr] = value;
+            options[attr] = value.trim();
             return "";
         }
     );
