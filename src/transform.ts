@@ -233,16 +233,20 @@ function getSelector(
 
     scope = onlyHostContext.length ? ":host-context" : scope;
 
-    const selector = (onlyHostContext.length ? onlyHostContext : nextAttrs).map(
-        ([attr, exp, value]) => {
-            if (attr.startsWith("^")) {
-                attr = attr.slice(1);
-            }
-            return exp === "!="
+    const selector = (onlyHostContext.length ? onlyHostContext : nextAttrs)
+        .map(([attr, exp, value]) => [
+            attr.startsWith("^") ? attr.slice(1) : attr,
+            exp,
+            value,
+        ])
+        .sort(([attr1], [attr2]) =>
+            attr1 > attr2 ? 1 : attr1 < attr2 ? -1 : 0
+        )
+        .map(([attr, exp, value]) =>
+            exp === "!="
                 ? `:not([${attr}="${value}"])`
-                : `[${attr}${exp ? `${exp}"${value}"` : ""}]`;
-        }
-    );
+                : `[${attr}${exp ? `${exp}"${value}"` : ""}]`
+        );
 
     return [
         `${scope}${
