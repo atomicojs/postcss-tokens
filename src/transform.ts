@@ -1,3 +1,4 @@
+import { parse } from "./parse";
 export interface Options {
     scope?: string;
     prefix?: string;
@@ -103,76 +104,19 @@ export const objectToCss = (rules: Rules): string => {
     return css;
 };
 
-/**
- * returns a selector expression in array format
- * @example
- * getTokens("(theme=dark)");
- * //output: [["theme","=","dark"]]
- *
- * getTokens("(theme=dark) | (theme!=light)");
- * //output: [["theme","=","dark"], "|", ["theme","!=","light"]]
- */
-const getTokens = (value: string) => {
-    value = value + " ";
-    let currentValue = "";
-    const tokens = [];
-    for (let i = 0; i < value.length; i++) {
-        switch (value[i]) {
-            case "=":
-            case "(":
-            case ")":
-            case ">":
-            case "<":
-            case ":":
-            case "|":
-            case "!":
-                if (currentValue) tokens.push(currentValue);
-                currentValue = "";
-                if (value[i] === "!" && value[i + 1] === "=") {
-                    tokens.push("!=");
-                    i++;
-                    break;
-                }
-                tokens.push(value[i]);
-                break;
-            case " ":
-                if (currentValue) tokens.push(currentValue);
-                currentValue = "";
-                break;
-            default:
-                currentValue += value[i];
-                break;
-        }
-    }
-
-    const list = tokens.map((value) =>
-        value === "("
-            ? "["
-            : value === ")"
-            ? "]"
-            : value.startsWith('"')
-            ? value
-            : `"${value}"`
-    );
-
-    return JSON.parse(
-        `[${list.join(",").replace(/\[,/g, "[").replace(/,\]/g, "]")}]`
-    );
-};
-
 const customPropertyToHumanName = (name: string) => {
     if (name === "=") return "";
 
-    const [first, ...tokens] = getTokens(name);
+    const tokens = parse(name);
 
-    if (!Array.isArray(first)) return first;
+    if (tokens?.[0]?.type === "operator") return tokens?.[0]?.value;
 
-    return [first.length > 1 ? first : ["=", first], tokens]
-        .flat(10)
-        .map((value) => {
-            value = value.replace(/^(@|\^)/, "");
-            return value in Alias ? Alias[value] : value;
+    return tokens
+        .map(({ parts: [attr, operator = "=", value] }) => {
+            const alias = Alias[operator] || "";
+            return value ? [attr, alias, value] : [alias, attr];
         })
+        .flat(1)
         .join("-");
 };
 
@@ -225,27 +169,20 @@ function getSelector(
     attrs: string[],
     scope: string = ":host"
 ): [string, string[]] {
-    const nextAttrs = attrs.map(getTokens).flat(1);
+    const nextAttrs = attrs.map(parse).flat(1);
 
-    const onlyHostContext = nextAttrs.filter(([attr]: string[]) =>
-        attr.startsWith("^")
-    );
+    const onlyHostContext = nextAttrs.filter((ref) => ref.type === "context");
 
     scope = onlyHostContext.length ? ":host-context" : scope;
 
     const selector = (onlyHostContext.length ? onlyHostContext : nextAttrs)
-        .map(([attr, exp, value]) => [
-            attr.startsWith("^") ? attr.slice(1) : attr,
-            exp,
-            value,
-        ])
-        .sort(([attr1], [attr2]) =>
+        .sort(({ parts: [attr1] }, { parts: [attr2] }) =>
             attr1 > attr2 ? 1 : attr1 < attr2 ? -1 : 0
         )
-        .map(([attr, exp, value]) =>
-            exp === "!="
-                ? `:not([${attr}="${value}"])`
-                : `[${attr}${exp ? `${exp}"${value}"` : ""}]`
+        .map(({ parts: [attr, operator, value] }) =>
+            operator === "!="
+                ? `:not([${attr}=${value}])`
+                : `[${attr}${operator ? `${operator}${value}` : ""}]`
         );
 
     return [

@@ -11,7 +11,7 @@ test("result import", async () => {
         from: "./tests/demo.css",
     });
 
-    // await writeFile("./tests/expect-import.css", result.css);
+    await writeFile("./tests/expect-import.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-import.css", "utf8"));
 });
 
@@ -22,7 +22,7 @@ test("result host, with root", async () => {
             from: "./tests/demo.css",
         }
     );
-    // await writeFile("./tests/expect-root.css", result.css);
+    await writeFile("./tests/expect-root.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-root.css", "utf8"));
 });
 
@@ -37,7 +37,7 @@ test("result file yaml", async () => {
         }
     );
 
-    // await writeFile("./tests/expect-use-default.css", result.css);
+    await writeFile("./tests/expect-use-default.css", result.css);
     assert.is(
         result.css,
         await readFile("./tests/expect-use-default.css", "utf8")

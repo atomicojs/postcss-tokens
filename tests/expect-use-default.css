@@ -1,5 +1,5 @@
 :root{--font-size:1rem;--font-family:unset;--font-size--is-small:.5rem;--font-size--scale-is-x2:2rem;--font-size--scale-is-x2--is-small:1rem;}
         :host{--font-size:var(--my-ds--font-size);--font-family:var(--my-ds--font-family);}
         :host([small]){--font-size:var(--my-ds--font-size--is-small);}
-        :host-context([scale="x2"]){--my-ds--font-size:var(--my-ds--font-size--scale-is-x2);--my-ds--font-size--is-small:var(--my-ds--font-size--scale-is-x2--is-small);}
+        :host-context([scale=x2]){--my-ds--font-size:var(--my-ds--font-size--scale-is-x2);--my-ds--font-size--is-small:var(--my-ds--font-size--scale-is-x2--is-small);}
         

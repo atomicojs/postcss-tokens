@@ -1,1 +1,1 @@
-:host{--size:var(--my-dsprefix--font-size);--family:var(--my-dsprefix--font-family);--smal:var(--my-dsprefix--font-size);}:host([size="small"]){--size:var(--my-dsprefix--font-size--size-is-small);}
+:host{--size:var(--my-dsprefix--font-size);--family:var(--my-dsprefix--font-family);--smal:var(--my-dsprefix--font-size);}:host([size=small]){--size:var(--my-dsprefix--font-size--size-is-small);}
