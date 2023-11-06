@@ -3,18 +3,19 @@ const SPACE = " ";
 interface Ref {
     type: string;
     value: string;
+    parts: string[];
 }
 
-function parse(value: string) {
+export const parse = (value: string) => {
     const text = value.replace(/\s+/g, " ") + " ";
     let current = "";
     let isOpen = 0;
     let ref: Ref;
-    const refs = [];
+    const refs: Ref[] = [];
     for (let i = 0; i < text.length; i++) {
         const value = text[i];
         if (value === "(" && !isOpen++) {
-            ref = { type: "attr", value: "" };
+            ref = { type: "attr", value: "", parts: [] };
             if (text[i - 1] !== SPACE) {
                 ref.type = current;
             }
@@ -24,6 +25,13 @@ function parse(value: string) {
         }
         if (value === ")" && !--isOpen) {
             ref.value = current.trim();
+            const test = ref.value.match(
+                /([\w]+)(:?((?:\!|\^|\~|\$|\*|\|)?(?:=))(.*))?/
+            );
+            if (test) {
+                const [, attr, , operator, value] = test;
+                ref.parts.push(attr, operator, value);
+            }
             ref = null;
             current = "";
             continue;
@@ -32,10 +40,11 @@ function parse(value: string) {
             refs.push({
                 type: "operator",
                 value: current.trim(),
+                parts: [],
             });
             current = "";
         }
         current += value;
     }
     return refs;
-}
+};
