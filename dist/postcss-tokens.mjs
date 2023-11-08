@@ -5,13 +5,61 @@ import postcss from 'postcss';
 
 const load = async (file) => yaml.load(await readFile(file, "utf8"));
 
+const SPACE = " ";
+const REGEXP_SELECTOR = String.raw`(?:(?:\!|\^|\~|\$|\*|\|)?(?:=))`;
+const REGEXP_ATTRIBUTE = String.raw`(?: *(>|<|:) *)`;
+const REGEXP = RegExp(String.raw`([\w\-\*]+)(:?(${REGEXP_SELECTOR}|${REGEXP_ATTRIBUTE})(.*))?`);
+const parse = (value) => {
+  const text = value.replace(/\s+/g, " ") + " ";
+  let current = "";
+  let isOpen = 0;
+  let ref;
+  const refs = [];
+  for (let i = 0; i < text.length; i++) {
+    const value2 = text[i];
+    if (value2 === "(" && !isOpen++) {
+      ref = { type: "attr", value: "", parts: [], raw: "" };
+      if (text[i - 1] !== SPACE) {
+        ref.type = current.trim();
+      }
+      current = "";
+      refs.push(ref);
+      continue;
+    }
+    if (value2 === ")" && !--isOpen) {
+      ref.value = current.trim();
+      const test = ref.value.match(REGEXP);
+      if (test) {
+        const [, attr, , operator, , value3] = test;
+        ref.parts.push(attr, operator ? operator.trim() : void 0, value3);
+        ref.raw = `${ref.type || ""}(${ref.value})`;
+      }
+      ref = null;
+      current = "";
+      continue;
+    }
+    if (value2 === SPACE && !isOpen && current) {
+      refs.push({
+        type: "operator",
+        value: current.trim(),
+        parts: [],
+        raw: ""
+      });
+      current = "";
+    }
+    current += value2;
+  }
+  return refs;
+};
+
 const Alias = {
   "<": "greater-than",
   ">": "less-than",
   "=": "is",
   "!=": "is-not",
   "|": "or",
-  "&": "and"
+  "&": "and",
+  "slot=*": "any-slot"
 };
 const transform = (data, options) => {
   const customProperties = createCustomProperties(data);
@@ -19,15 +67,27 @@ const transform = (data, options) => {
   const search = options.use || options.filter;
   const regExp = search ? RegExp(`^(${search})(-){0,}`) : null;
   const prefix = `--${options.prefix ? `${options.prefix}--` : ""}`;
+  return objectToCss(mapTransform(customProperties, options, rules, regExp, prefix, true));
+};
+const mapTransform = (customProperties, options, rules, regExp, prefix, isParent, parentPrefix = "", parentSuffix = "") => {
   for (const prop in customProperties) {
     const { value, attrs, props } = customProperties[prop];
-    const selector = options.scope === ":root" ? options.scope : getSelector(attrs, options.scope);
+    const [selector, selectorAttrs, excludeAttrs] = options.scope === ":root" ? [options.scope, []] : getSelector(attrs, options.scope);
     if (regExp && !regExp.test(prop))
       continue;
-    const nextProp = regExp ? prop.replace(regExp, "") : prop;
-    if (!nextProp)
+    const token = regExp ? prop.replace(regExp, "") : prop;
+    if (!token)
       continue;
     rules[selector] = rules[selector] || {};
+    if (selector.startsWith("@") && isParent) {
+      mapTransform({
+        [prop]: {
+          ...customProperties[prop],
+          attrs: excludeAttrs
+        }
+      }, options, rules[selector], regExp, prefix, false);
+      continue;
+    }
     const nextValue = value.replace(/([\$]+){1,2}([\w\-]+)/g, (_, type, variable) => {
       const inRoot = customProperties[variable];
       return type === "$" && inRoot && options.scope != ":root" ? `var(--${variable.replace(regExp, "")})` : `var(${prefix}${variable})`;
@@ -35,70 +95,85 @@ const transform = (data, options) => {
     if (options.scope === ":root") {
       rules[selector][`${prefix}${prop}`] = nextValue != value ? nextValue : value;
     } else {
-      rules[selector][`--${props.join("-")}`] = nextValue != value ? nextValue : `var(${prefix}${prop})`;
+      const isHostContext = selector.startsWith(":host-context");
+      const isSlotted = selector.startsWith("::slotted");
+      let id = parentPrefix + props.join("-").replace(regExp, "") + parentSuffix;
+      if (isHostContext) {
+        const token2 = selectorAttrs.map((value2) => value2.replace(/\[/g, "(").replace(/\]/g, ")")).map(customPropertyToHumanName).reduce((prop2, value2) => prop2.replace(`--${value2}`, ""), prop);
+        if (options.bind) {
+          rules[selector][`--_${token2}`] = nextValue != value ? nextValue : `var(${prefix}${prop})`;
+        } else {
+          rules[selector][`${prefix}${token2}`] = nextValue != value ? nextValue : `var(${prefix}${prop})`;
+        }
+      } else if (isSlotted) {
+        if (excludeAttrs.length) {
+          mapTransform({
+            [prop]: {
+              ...customProperties[prop],
+              attrs: excludeAttrs,
+              props: [...customProperties[prop].props]
+            }
+          }, {
+            ...options,
+            bind: false
+          }, rules, regExp, prefix, false, "", customProperties[prop].alias[0] ? `--${customProperties[prop].alias[0]}` : "");
+          continue;
+        }
+        const idSlot = `--${prop}`;
+        rules[":host"][idSlot] = `var(${prefix}${prop})`;
+        rules[selector][`--${id}`] = `var(${idSlot})`;
+      } else {
+        if (nextValue != value) {
+          rules[selector][`--${id}`] = nextValue;
+        } else if (!isSlotted && options.bind && selectorAttrs.length) {
+          rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
+          rules[selector][`--_${id}`] = `var(--_${token})`;
+        } else if (!isSlotted && options.bind) {
+          rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
+          rules[selector][`--${id}`] = `var(--_${token})`;
+        } else {
+          rules[selector][`--${id}`] = `var(${prefix}${prop})`;
+        }
+      }
     }
   }
-  return objectToCss(rules);
+  return rules;
 };
 const objectToCss = (rules) => {
   let css = "";
   for (const selector in rules) {
     let props = "";
     for (const prop in rules[selector]) {
-      props += `${prop}:${rules[selector][prop]};`;
+      if (typeof rules[selector][prop] === "object") {
+        props += objectToCss({
+          [prop]: rules[selector][prop]
+        });
+      } else {
+        props += `${prop}:${rules[selector][prop]};`;
+      }
     }
     if (props)
       css += `${selector}{${props}}`;
   }
   return css;
 };
-const getTokens = (value) => {
-  value = value + " ";
-  let currentValue = "";
-  const tokens = [];
-  for (let i = 0; i < value.length; i++) {
-    switch (value[i]) {
-      case "=":
-      case "(":
-      case ")":
-      case ">":
-      case "<":
-      case ":":
-      case "|":
-      case "!":
-        if (currentValue)
-          tokens.push(currentValue);
-        currentValue = "";
-        if (value[i] === "!" && value[i + 1] === "=") {
-          tokens.push("!=");
-          i++;
-          break;
-        }
-        tokens.push(value[i]);
-        break;
-      case " ":
-        if (currentValue)
-          tokens.push(currentValue);
-        currentValue = "";
-        break;
-      default:
-        currentValue += value[i];
-        break;
-    }
-  }
-  const list = tokens.map((value2) => value2 === "(" ? "[" : value2 === ")" ? "]" : value2.startsWith('"') ? value2 : `"${value2}"`);
-  return JSON.parse(`[${list.join(",").replace(/\[,/g, "[").replace(/,\]/g, "]")}]`);
-};
 const customPropertyToHumanName = (name) => {
   if (name === "=")
     return "";
-  const [first, ...tokens] = getTokens(name);
-  if (!Array.isArray(first))
-    return first;
-  return [first.length > 1 ? first : ["=", first], tokens].flat(10).map((value) => {
-    value = value.replace(/^(@|\^)/, "");
-    return value in Alias ? Alias[value] : value;
-  }).join("-");
+  const tokens = parse(name);
+  if (tokens?.[0]?.type === "operator")
+    return tokens?.[0]?.value;
+  return tokens.map(({ type, parts: [attr, operator = "=", value] }) => {
+    if (type === "slot") {
+      if (attr === "*") {
+        return [Alias["slot=*"]];
+      }
+      value = attr;
+      attr = "slot";
+    }
+    const alias = Alias[operator] || "";
+    return value ? [attr, alias, value] : [alias, attr];
+  }).flat(1).join("-");
 };
 const createCustomProperties = (data, customProperties = {}, currentAttrs = [], currentProps = [], currentAlias = []) => {
   for (const prop in data) {
@@ -124,14 +199,44 @@ const createCustomProperties = (data, customProperties = {}, currentAttrs = [], 
   return customProperties;
 };
 function getSelector(attrs, scope = ":host") {
-  const selector = attrs.map(getTokens).flat(1).map(([attr, exp, value]) => {
-    if (attr.startsWith("^")) {
-      scope = ":host-context";
-      attr = attr.slice(1);
+  const nextAttrs = attrs.map(parse).flat(1);
+  const noAttrs = nextAttrs.filter((ref) => ref.type !== "");
+  const excludeAttrs = noAttrs.length ? nextAttrs.filter((ref) => !ref.type).map((ref) => ref.raw) : [];
+  const selector = (noAttrs.length ? noAttrs : nextAttrs).sort(({ parts: [attr1] }, { parts: [attr2] }) => attr1 > attr2 ? 1 : attr1 < attr2 ? -1 : 0).map(({ type, parts: [attr, operator, value] }) => {
+    let prefix = "[";
+    let suffix = "]";
+    switch (type) {
+      case "slot": {
+        scope = "::slotted";
+        if (attr === "*") {
+          return "*";
+        }
+        if (!operator) {
+          value = attr;
+          attr = "slot";
+          operator = "=";
+        }
+        break;
+      }
+      case "container":
+      case "media": {
+        scope = `@${type} `;
+        prefix = "";
+        suffix = "";
+        break;
+      }
+      case "context": {
+        scope = ":host-context";
+        break;
+      }
     }
-    return exp === "!=" ? `:not([${attr}="${value}"])` : `[${attr}${exp ? `${exp}"${value}"` : ""}]`;
-  }).join("");
-  return `${scope}${scope.startsWith(":host") && selector ? `(${selector})` : `${selector}`}`;
+    return operator === "!=" ? `:not([${attr}=${value}])` : `${prefix}${attr}${operator ? `${operator}${value}` : ""}${suffix}`;
+  });
+  return [
+    `${scope}${/^(:host|::slotted|@)/.test(scope) && selector.length ? `(${selector.join("")})` : `${selector.join("")}`}`,
+    selector,
+    excludeAttrs
+  ];
 }
 
 async function replace(atRule, { load: load2, ...rootOptions }) {
@@ -143,9 +248,12 @@ async function replace(atRule, { load: load2, ...rootOptions }) {
   const options = {
     ...rootOptions
   };
-  attrs.replace(/([\w]+)\(([^\)]+)\)/g, (_, attr, value) => {
-    options[attr] = value.trim();
-    return "";
+  parse(attrs).forEach(({ type, value }) => {
+    if (type === "operator") {
+      options[value] = true;
+    } else {
+      options[type] = value;
+    }
   });
   const dirname = path.dirname(file);
   const data = await load2(path.join(dirname, source), file);

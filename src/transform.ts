@@ -150,7 +150,9 @@ const mapTransform = (
                         prefix,
                         false,
                         "",
-                        `--${customProperties[prop].alias.at(0)}`
+                        customProperties[prop].alias[0]
+                            ? `--${customProperties[prop].alias[0]}`
+                            : ""
                     );
                     continue;
                 }
