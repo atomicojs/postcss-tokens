@@ -66,7 +66,8 @@ const mapTransform = (
 
         if (regExp && !regExp.test(prop)) continue;
 
-        const token = regExp ? prop.replace(regExp, "") : prop;
+        const token = regExp && options.use ? prop.replace(regExp, "") : prop;
+        const currentRegExp = options.use ? regExp : null;
 
         if (!token) continue;
 
@@ -94,7 +95,7 @@ const mapTransform = (
             (_: string, type: string, variable: string) => {
                 const inRoot = customProperties[variable];
                 return type === "$" && inRoot && options.scope != ":root"
-                    ? `var(--${variable.replace(regExp, "")})`
+                    ? `var(--${variable.replace(currentRegExp, "")})`
                     : `var(${prefix}${variable})`;
             }
         );
@@ -107,7 +108,7 @@ const mapTransform = (
             const isSlotted = selector.startsWith("::slotted");
             let id =
                 parentPrefix +
-                props.join("-").replace(regExp, "") +
+                props.join("-").replace(currentRegExp, "") +
                 parentSuffix;
 
             if (isHostContext) {
