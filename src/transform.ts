@@ -1,9 +1,11 @@
+import { rule } from "postcss";
 import { parse } from "./parse";
 export interface Options {
     scope?: string;
     prefix?: string;
     use?: string;
     filter?: string;
+    bind?: boolean;
 }
 
 interface Data {
@@ -20,7 +22,7 @@ interface CustomProperties {
 }
 
 interface Rules {
-    [selector: string]: { [prop: string]: string };
+    [selector: string]: { [prop: string]: any };
 }
 
 export const Alias = {
@@ -30,6 +32,7 @@ export const Alias = {
     "!=": "is-not",
     "|": "or",
     "&": "and",
+    "slot=*": "any-slot",
 };
 
 export const transform = (data: Data, options: Options) => {
@@ -39,20 +42,52 @@ export const transform = (data: Data, options: Options) => {
     const regExp = search ? RegExp(`^(${search})(-){0,}`) : null;
     const prefix = `--${options.prefix ? `${options.prefix}--` : ""}`;
 
+    return objectToCss(
+        mapTransform(customProperties, options, rules, regExp, prefix, true)
+    );
+};
+
+const mapTransform = (
+    customProperties: CustomProperties,
+    options: Options,
+    rules: Rules,
+    regExp: RegExp,
+    prefix: string,
+    isParent: boolean,
+    parentPrefix = "",
+    parentSuffix = ""
+) => {
     for (const prop in customProperties) {
         const { value, attrs, props } = customProperties[prop];
-        const [selector, selectorAttrs] =
+        const [selector, selectorAttrs, excludeAttrs] =
             options.scope === ":root"
                 ? [options.scope, []]
                 : getSelector(attrs, options.scope);
 
         if (regExp && !regExp.test(prop)) continue;
 
-        const nextProp = regExp ? prop.replace(regExp, "") : prop;
+        const token = regExp ? prop.replace(regExp, "") : prop;
 
-        if (!nextProp) continue;
+        if (!token) continue;
 
         rules[selector] = rules[selector] || {};
+
+        if (selector.startsWith("@") && isParent) {
+            mapTransform(
+                {
+                    [prop]: {
+                        ...customProperties[prop],
+                        attrs: excludeAttrs,
+                    },
+                },
+                options,
+                rules[selector],
+                regExp,
+                prefix,
+                false
+            );
+            continue;
+        }
 
         const nextValue = value.replace(
             /([\$]+){1,2}([\w\-]+)/g,
@@ -69,8 +104,14 @@ export const transform = (data: Data, options: Options) => {
                 nextValue != value ? nextValue : value;
         } else {
             const isHostContext = selector.startsWith(":host-context");
+            const isSlotted = selector.startsWith("::slotted");
+            let id =
+                parentPrefix +
+                props.join("-").replace(regExp, "") +
+                parentSuffix;
+
             if (isHostContext) {
-                const nextProp = selectorAttrs
+                const token = selectorAttrs
                     .map((value) =>
                         value.replace(/\[/g, "(").replace(/\]/g, ")")
                     )
@@ -79,25 +120,73 @@ export const transform = (data: Data, options: Options) => {
                         (prop, value) => prop.replace(`--${value}`, ""),
                         prop
                     );
-
-                rules[selector][`${prefix}${nextProp}`] =
-                    nextValue != value ? nextValue : `var(${prefix}${prop})`;
+                if (options.bind) {
+                    rules[selector][`--_${token}`] =
+                        nextValue != value
+                            ? nextValue
+                            : `var(${prefix}${prop})`;
+                } else {
+                    rules[selector][`${prefix}${token}`] =
+                        nextValue != value
+                            ? nextValue
+                            : `var(${prefix}${prop})`;
+                }
+            } else if (isSlotted) {
+                if (excludeAttrs.length) {
+                    mapTransform(
+                        {
+                            [prop]: {
+                                ...customProperties[prop],
+                                attrs: excludeAttrs,
+                                props: [...customProperties[prop].props],
+                            },
+                        },
+                        {
+                            ...options,
+                            bind: false,
+                        },
+                        rules,
+                        regExp,
+                        prefix,
+                        false,
+                        "",
+                        `--${customProperties[prop].alias.at(0)}`
+                    );
+                    continue;
+                }
+                const idSlot = `--${prop}`;
+                rules[":host"][idSlot] = `var(${prefix}${prop})`;
+                rules[selector][`--${id}`] = `var(${idSlot})`;
             } else {
-                rules[selector][`--${props.join("-").replace(regExp, "")}`] =
-                    nextValue != value ? nextValue : `var(${prefix}${prop})`;
+                if (nextValue != value) {
+                    rules[selector][`--${id}`] = nextValue;
+                } else if (!isSlotted && options.bind && selectorAttrs.length) {
+                    rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
+                    rules[selector][`--_${id}`] = `var(--_${token})`;
+                } else if (!isSlotted && options.bind) {
+                    rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
+                    rules[selector][`--${id}`] = `var(--_${token})`;
+                } else {
+                    rules[selector][`--${id}`] = `var(${prefix}${prop})`;
+                }
             }
         }
     }
-
-    return objectToCss(rules);
+    return rules;
 };
 
-export const objectToCss = (rules: Rules): string => {
+const objectToCss = (rules: Rules): string => {
     let css = "";
     for (const selector in rules) {
         let props = "";
         for (const prop in rules[selector]) {
-            props += `${prop}:${rules[selector][prop]};`;
+            if (typeof rules[selector][prop] === "object") {
+                props += objectToCss({
+                    [prop]: rules[selector][prop],
+                });
+            } else {
+                props += `${prop}:${rules[selector][prop]};`;
+            }
         }
         if (props) css += `${selector}{${props}}`;
     }
@@ -112,7 +201,14 @@ const customPropertyToHumanName = (name: string) => {
     if (tokens?.[0]?.type === "operator") return tokens?.[0]?.value;
 
     return tokens
-        .map(({ parts: [attr, operator = "=", value] }) => {
+        .map(({ type, parts: [attr, operator = "=", value] }) => {
+            if (type === "slot") {
+                if (attr === "*") {
+                    return [Alias["slot=*"]];
+                }
+                value = attr;
+                attr = "slot";
+            }
             const alias = Alias[operator] || "";
             return value ? [attr, alias, value] : [alias, attr];
         })
@@ -168,79 +264,61 @@ const createCustomProperties = (
 function getSelector(
     attrs: string[],
     scope: string = ":host"
-): [string, string[]] {
+): [string, string[], string[]] {
     const nextAttrs = attrs.map(parse).flat(1);
 
-    const onlyHostContext = nextAttrs.filter((ref) => ref.type === "context");
+    const noAttrs = nextAttrs.filter((ref) => ref.type !== "");
 
-    scope = onlyHostContext.length ? ":host-context" : scope;
+    const excludeAttrs = noAttrs.length
+        ? nextAttrs.filter((ref) => !ref.type).map((ref) => ref.raw)
+        : [];
 
-    const selector = (onlyHostContext.length ? onlyHostContext : nextAttrs)
+    const selector = (noAttrs.length ? noAttrs : nextAttrs)
         .sort(({ parts: [attr1] }, { parts: [attr2] }) =>
             attr1 > attr2 ? 1 : attr1 < attr2 ? -1 : 0
         )
-        .map(({ parts: [attr, operator, value] }) =>
-            operator === "!="
+        .map(({ type, parts: [attr, operator, value] }) => {
+            let prefix = "[";
+            let suffix = "]";
+            switch (type) {
+                case "slot": {
+                    scope = "::slotted";
+                    if (attr === "*") {
+                        return "*";
+                    }
+                    if (!operator) {
+                        value = attr;
+                        attr = "slot";
+                        operator = "=";
+                    }
+                    break;
+                }
+                case "container":
+                case "media": {
+                    scope = `@${type} `;
+                    prefix = "";
+                    suffix = "";
+                    break;
+                }
+                case "context": {
+                    scope = ":host-context";
+                    break;
+                }
+            }
+            return operator === "!="
                 ? `:not([${attr}=${value}])`
-                : `[${attr}${operator ? `${operator}${value}` : ""}]`
-        );
+                : `${prefix}${attr}${
+                      operator ? `${operator}${value}` : ""
+                  }${suffix}`;
+        });
 
     return [
         `${scope}${
-            scope.startsWith(":host") && selector.length
+            /^(:host|::slotted|@)/.test(scope) && selector.length
                 ? `(${selector.join("")})`
                 : `${selector.join("")}`
         }`,
         selector,
+        excludeAttrs,
     ];
 }
-
-// const data = {
-//     size: {
-//         1: "1rem",
-//         2: "2rem",
-//         3: "3rem",
-//     },
-//     color: {
-//         primary: 1,
-//         "(checked)": {
-//             primary: {
-//                 "=": "100",
-//                 contrast: "-110",
-//                 "(contrast!=false)": {
-//                     "=": 200,
-//                     contrast: {
-//                         "=": "-100",
-//                         border: "tomato",
-//                     },
-//                 },
-//             },
-//         },
-//         "(^theme=dark)": {
-//             primary: 2,
-//         },
-//     },
-//     button: {
-//         border: {
-//             "=": "$button-border-size solid $button-border-color",
-//             color: "tomato",
-//             size: "$$size-1",
-//             "(checked)": {
-//                 color: "red",
-//                 "(show)": {
-//                     color: "black",
-//                     "(theme!=primary)": {
-//                         color: "magenta",
-//                     },
-//                 },
-//             },
-//         },
-//     },
-// };
-
-// console.log(
-//     transform(data, {
-//         scope: ":host",
-//         prefix: "my-ds",
-//     })
-// );

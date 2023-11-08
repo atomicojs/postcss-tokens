@@ -1,8 +1,8 @@
 color:
     fill: red
-    [color=success]:
+    (color=success):
         fill: white
-        [ghost=true]:
+        (ghost):
             fill: black
-            [color!=ok]:
+            (color!=ok):
                 fill: white

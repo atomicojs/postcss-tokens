@@ -1,9 +1,31 @@
 font:
     size: 1rem
     family: unset
+    border:
+        =: $font-border-size solid $font-border-color
+        size: 1px
+        color: red
+        (small):
+            size: .5px
+    (theme=dark):
+        size: 100rem
     (small):
         size: .5rem
     context(scale=x2):
         size: 2rem
         (small):
             size: 1rem
+    slot(header):
+        color: white
+        (checked):
+            color: black
+    media(width > 320px):
+        size: 200px
+        (small):
+            size: 100px
+    container(width > 320px):
+        size-1: 100px
+        size-2: 200px
+        (small):
+            size-1: .25rem
+            size-2: .5rem

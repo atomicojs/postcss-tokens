@@ -3,7 +3,7 @@ import { AtRule, PluginCreator } from "postcss";
 import { load } from "./load";
 import { Options as OptionsTransform, transform } from "./transform";
 import postcss from "postcss";
-
+import { parse } from "./parse";
 interface Options extends OptionsTransform {
     load?: (file: string, from: string) => Promise<any>;
 }
@@ -20,13 +20,13 @@ async function replace(atRule: AtRule, { load, ...rootOptions }: Options) {
         ...rootOptions,
     };
 
-    attrs.replace(
-        /([\w]+)\(([^\)]+)\)/g,
-        (_: string, attr: string, value: string) => {
-            options[attr] = value.trim();
-            return "";
+    parse(attrs).forEach(({ type, value }) => {
+        if (type === "operator") {
+            options[value] = true;
+        } else {
+            options[type] = value;
         }
-    );
+    });
 
     const dirname = path.dirname(file);
 
