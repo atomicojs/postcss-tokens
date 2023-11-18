@@ -91,8 +91,8 @@ const mapTransform = (
         }
 
         const nextValue = value.replace(
-            /([\$]+)?([\w\-]+)/g,
-            (_: string, type: string, variable: string) =>
+            /\$([\w\-]+)/g,
+            (_: string, variable: string) =>
                 options.scope === ":root"
                     ? `var(${prefix}${variable})`
                     : `var(${prefix}${prop})`
