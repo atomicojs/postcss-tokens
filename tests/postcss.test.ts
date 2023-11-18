@@ -60,4 +60,20 @@ test("result file yaml", async () => {
     assert.is(result.css, await readFile("./tests/expect-filter.css", "utf8"));
 });
 
+test("context", async () => {
+    const result = await postcss([postcssTokens()]).process(
+        `
+        @tokens "./tokens-4.yaml" prefix(my-ds) scope(:root);
+        @tokens "./tokens-4.yaml" prefix(my-ds) filter(color);
+        @tokens "./tokens-4.yaml" prefix(my-ds) use(button);
+        `,
+        {
+            from: "./tests/demo.css",
+        }
+    );
+
+    // await writeFile("./tests/expect-context.css", result.css);
+    assert.is(result.css, await readFile("./tests/expect-context.css", "utf8"));
+});
+
 test.run();

@@ -1,0 +1,5 @@
+:root{--my-ds--color-primary:var(--my-ds--white);--my-ds--color-secondary:var(--my-ds--black);--my-ds--button-color-container:var(--my-ds--color-primary);--my-ds--button-color-container--theme-is-black:var(--my-ds--color-secondary);}
+        :host{--color-primary:var(--my-ds--color-primary);--color-secondary:var(--my-ds--color-secondary);}
+        :host{--color-container:var(--my-ds--button-color-container);}
+        :host-context([theme=black]){--my-ds--button-color-container:var(--my-ds--button-color-container--theme-is-black);}
+        

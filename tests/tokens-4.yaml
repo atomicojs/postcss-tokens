@@ -1,0 +1,10 @@
+color:
+    primary: white
+    secondary: black
+
+button:
+    color:
+        container: $color-primary
+    context(theme=black):
+        color:
+            container: $color-secondary

@@ -91,13 +91,11 @@ const mapTransform = (
         }
 
         const nextValue = value.replace(
-            /([\$]+){1,2}([\w\-]+)/g,
-            (_: string, type: string, variable: string) => {
-                const inRoot = customProperties[variable];
-                return type === "$" && inRoot && options.scope != ":root"
-                    ? `var(--${variable.replace(currentRegExp, "")})`
-                    : `var(${prefix}${variable})`;
-            }
+            /([\$]+)?([\w\-]+)/g,
+            (_: string, type: string, variable: string) =>
+                options.scope === ":root"
+                    ? `var(${prefix}${variable})`
+                    : `var(${prefix}${prop})`
         );
 
         if (options.scope === ":root") {
