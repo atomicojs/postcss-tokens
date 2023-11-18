@@ -90,13 +90,14 @@ const mapTransform = (
             continue;
         }
 
-        const nextValue = value.replace(
-            /\$([\w\-]+)/g,
-            (_: string, variable: string) =>
-                options.scope === ":root"
-                    ? `var(${prefix}${variable})`
-                    : `var(${prefix}${prop})`
-        );
+        const nextValue =
+            options.scope === ":root"
+                ? value.replace(
+                      /\$([\w\-]+)/g,
+                      (_: string, variable: string) =>
+                          `var(${prefix}${variable})`
+                  )
+                : `var(${prefix}${prop})`;
 
         if (options.scope === ":root") {
             rules[selector][`${prefix}${prop}`] =

@@ -5,6 +5,12 @@ color:
 button:
     color:
         container: $color-primary
+    border:
+        =: $button-border-size solid $button-color-container
+        size: 1px
     context(theme=black):
         color:
             container: $color-secondary
+    context(size=small):
+        border:
+            size: 2px

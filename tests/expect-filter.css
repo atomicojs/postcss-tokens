@@ -1,2 +1,2 @@
-:host{--font-border:var(--my-ds--font-border) solid var(--my-ds--font-border);--font-border-size:var(--my-ds--font-border-size);--font-border-color:var(--my-ds--font-border-color);}:host([small]){--font-border-size:var(--my-ds--font-border-size--is-small);}
+:host{--font-border:var(--my-ds--font-border);--font-border-size:var(--my-ds--font-border-size);--font-border-color:var(--my-ds--font-border-color);}:host([small]){--font-border-size:var(--my-ds--font-border-size--is-small);}
         
