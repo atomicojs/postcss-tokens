@@ -1,4 +1,3 @@
-import { rule } from "postcss";
 import { parse } from "./parse";
 export interface Options {
     scope?: string;
@@ -91,7 +90,7 @@ const mapTransform = (
         }
 
         const nextValue =
-            options.scope === ":root"
+            options.scope === ":root" || value.includes("$")
                 ? value.replace(
                       /\$([\w\-]+)/g,
                       (_: string, variable: string) =>
@@ -227,6 +226,21 @@ const createCustomProperties = (
 ) => {
     for (const prop in data) {
         const value = data[prop];
+
+        if (prop !== "=") {
+            const [ref] = parse(prop);
+            if (ref?.type === "root") {
+                createCustomProperties(
+                    { [ref.value]: value },
+                    customProperties,
+                    currentAttrs,
+                    [],
+                    currentAlias
+                );
+                continue;
+            }
+        }
+
         const alia = customPropertyToHumanName(prop);
 
         const [attrs, props, alias] =

@@ -8,9 +8,15 @@ button:
     border:
         =: $button-border-size solid $button-color-container
         size: 1px
+    (active):
+        color:
+            container: $color-secondary
     context(theme=black):
         color:
             container: $color-secondary
+        (active):
+            color:
+                container: $color-primary
     context(size=small):
         border:
             size: 2px
