@@ -296,11 +296,13 @@ function getSelector(
             if (value === "true" && operator === "=") {
                 operator = "";
             }
-            return operator === "!="
-                ? `:not([${attr}=${value}])`
-                : `${prefix}${attr}${
-                      operator ? `${operator}${value}` : ""
-                  }${suffix}`;
+            return (
+                operator === "!="
+                    ? `:not([${attr}=${value}])`
+                    : `${prefix}${attr}${
+                          operator ? `${operator}${value}` : ""
+                      }${suffix}`
+            ).replace(/=true]/g, "]");
         });
 
     return [

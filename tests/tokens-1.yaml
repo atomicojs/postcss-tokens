@@ -14,3 +14,5 @@ buttons:
             text: white
             slot(active):
                 container: red
+            slot(small!=true):
+                container: red
