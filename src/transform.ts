@@ -128,22 +128,7 @@ const mapTransform = (
                 parentPrefix +
                 props.join("-").replace(currentRegExp, "$1") +
                 parentSuffix;
-            if (isHostContext) {
-                const token = selectorAttrs
-                    .map((value) =>
-                        value.replace(/\[/g, "(").replace(/\]/g, ")")
-                    )
-                    .map(customPropertyToHumanName)
-                    .reduce(
-                        (prop, value) => prop.replace(`--${value}`, ""),
-                        prop
-                    );
-                setSelector(
-                    selector,
-                    `${prefix}${token}`,
-                    nextValue != value ? nextValue : `var(${prefix}${prop})`
-                );
-            } else if (isSlotted) {
+            if (isHostContext || isSlotted) {
                 setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
                 setSelector(selector, `--${id}`, `var(--${token})`);
             } else {
@@ -289,9 +274,11 @@ function getSelector(
             let suffix = "]";
             switch (type) {
                 case "slot": {
+                    scope = SLOTTED;
                     if (attr === "*" || (value === "*" && attr === "slot")) {
                         return "*";
                     }
+
                     break;
                 }
                 case "container":

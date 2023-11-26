@@ -1,26 +1,5 @@
-:root {
-    --my-ds--button-color-container: red;
-    --my-ds--button-color-text: black;
-    --my-ds--button-color-container--is-checked: black;
-    --my-ds--button-color-text--is-checked: red;
-    --my-ds--button-color-container--is-checked--is-small: tomato;
-    --my-ds--buttons-color-container--slot-is-any: transparent;
-    --my-ds--buttons-color-text--slot-is-any: white;
-    --my-ds--buttons-color-container--slot-is-any--is-active: red;
-}
-::slotted(*) {
-    --color-container: var(--color-container--slot-is-any);
-    --color-text: var(--color-text--slot-is-any);
-}
-:host {
-    --color-container--slot-is-any: var(
-        --my-ds--buttons-color-container--slot-is-any
-    );
-    --color-text--slot-is-any: var(--my-ds--buttons-color-text--slot-is-any);
-    --color-container--slot-is-any--is-active: var(
-        --my-ds--buttons-color-container--slot-is-any--is-active
-    );
-}
-::slotted(*[active]) {
-    --color-container: var(--color-container--slot-is-any--is-active);
-}
+:root{--my-ds--button-color-container:red;--my-ds--button-color-text:black;--my-ds--button-color-container--is-checked:black;--my-ds--button-color-text--is-checked:red;--my-ds--button-color-container--is-checked--is-small:tomato;--my-ds--buttons-color-container--slot-is-any:transparent;--my-ds--buttons-color-text--slot-is-any:white;--my-ds--buttons-color-container--slot-is-any--is-active:red;}
+        ::slotted(*){--color-container:var(--color-container--slot-is-any);--color-text:var(--color-text--slot-is-any);}
+        :host{--color-container--slot-is-any:var(--my-ds--buttons-color-container--slot-is-any);--color-text--slot-is-any:var(--my-ds--buttons-color-text--slot-is-any);--color-container--slot-is-any--is-active:var(--my-ds--buttons-color-container--slot-is-any--is-active);}
+        ::slotted(*[active]){--color-container:var(--color-container--slot-is-any--is-active);}
+        

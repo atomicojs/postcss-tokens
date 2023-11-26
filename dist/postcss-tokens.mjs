@@ -107,8 +107,8 @@ const mapTransform = (customProperties, options, rules, regExp, prefix, isParent
       const isSlotted = selector.startsWith(SLOTTED);
       let id = parentPrefix + props.join("-").replace(currentRegExp, "$1") + parentSuffix;
       if (isHostContext) {
-        const token2 = selectorAttrs.map((value2) => value2.replace(/\[/g, "(").replace(/\]/g, ")")).map(customPropertyToHumanName).reduce((prop2, value2) => prop2.replace(`--${value2}`, ""), prop);
-        setSelector(selector, `${prefix}${token2}`, nextValue != value ? nextValue : `var(${prefix}${prop})`);
+        setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
+        setSelector(selector, `--${id}`, `var(--${token})`);
       } else if (isSlotted) {
         setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
         setSelector(selector, `--${id}`, `var(--${token})`);
@@ -151,8 +151,14 @@ const customPropertyToHumanName = (name) => {
   if (tokens?.[0]?.type === "operator")
     return tokens?.[0]?.value;
   return tokens.map(({ type, parts: [attr, operator = "=", value] }) => {
-    if (type === "slot" && attr === "slot" && value === "*") {
-      value = Alias[value] || value;
+    if (type === "slot") {
+      if (attr === "slot" && value === "*") {
+        value = Alias[value] || value;
+      } else if (attr === "*") {
+        attr = "slot";
+        operator = "=";
+        value = "any";
+      }
     }
     const alias = Alias[operator] || "";
     value = value === "true" ? "" : value;
@@ -201,11 +207,6 @@ function getSelector(attrs, scope = HOST) {
         scope = SLOTTED;
         if (attr === "*" || value === "*" && attr === "slot") {
           return "*";
-        }
-        if (!operator) {
-          value = attr;
-          attr = "slot";
-          operator = "=";
         }
         break;
       }
