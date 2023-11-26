@@ -8,9 +8,9 @@ button:
             (small):
                 container: tomato
 buttons:
-    slot(slot=*):
+    slot(*):
         color:
             container: transparent
             text: white
-            slot(active=true):
+            slot(active):
                 container: red

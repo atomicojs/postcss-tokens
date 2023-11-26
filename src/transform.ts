@@ -192,8 +192,14 @@ const customPropertyToHumanName = (name: string) => {
 
     return tokens
         .map(({ type, parts: [attr, operator = "=", value] }) => {
-            if (type === "slot" && attr === "slot" && value === "*") {
-                value = Alias[value] || value;
+            if (type === "slot") {
+                if (attr === "slot" && value === "*") {
+                    value = Alias[value] || value;
+                } else if (attr === "*") {
+                    attr = "slot";
+                    operator = "=";
+                    value = "any";
+                }
             }
             const alias = Alias[operator] || "";
             value = value === "true" ? "" : value;
@@ -283,14 +289,8 @@ function getSelector(
             let suffix = "]";
             switch (type) {
                 case "slot": {
-                    scope = SLOTTED;
                     if (attr === "*" || (value === "*" && attr === "slot")) {
                         return "*";
-                    }
-                    if (!operator) {
-                        value = attr;
-                        attr = "slot";
-                        operator = "=";
                     }
                     break;
                 }

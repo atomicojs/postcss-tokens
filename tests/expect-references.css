@@ -21,6 +21,6 @@
         --my-ds--buttons-color-container--slot-is-any--is-active
     );
 }
-::slotted([active]) {
+::slotted(*[active]) {
     --color-container: var(--color-container--slot-is-any--is-active);
 }
