@@ -92,9 +92,11 @@ const mapTransform = (
         const nextValue =
             options.scope === ":root" || value.includes("$")
                 ? value.replace(
-                      /\$([\w\-]+)/g,
-                      (_: string, variable: string) =>
-                          `var(${prefix}${variable})`
+                      /\$(\$)?([\w\-]+)/g,
+                      (_: string, reference, variable: string) =>
+                          reference
+                              ? `var(--${variable})`
+                              : `var(${prefix}${variable})`
                   )
                 : `var(${prefix}${prop})`;
 
