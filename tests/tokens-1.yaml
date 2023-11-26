@@ -1,0 +1,16 @@
+button:
+    color:
+        container: red
+        text: black
+        (checked):
+            container: black
+            text: red
+            (small):
+                container: tomato
+buttons:
+    slot(slot=*):
+        color:
+            container: transparent
+            text: white
+            slot(active=true):
+                container: red

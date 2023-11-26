@@ -52,6 +52,9 @@ const parse = (value) => {
   return refs;
 };
 
+const HOST = ":host";
+const HOST_CONTEXT = ":host-context";
+const SLOTTED = "::slotted";
 const Alias = {
   "<": "greater-than",
   ">": "less-than",
@@ -59,26 +62,34 @@ const Alias = {
   "!=": "is-not",
   "|": "or",
   "&": "and",
-  "slot=*": "any-slot"
+  "*": "any"
 };
 const transform = (data, options) => {
   const customProperties = createCustomProperties(data);
   const rules = {};
   const search = options.use || options.filter;
-  const regExp = search ? RegExp(`^(${search})(-){0,}`) : null;
+  const regExp = search ? RegExp(`^(?:${search}|${search}(?:-){1,}(.+))$`) : null;
   const prefix = `--${options.prefix ? `${options.prefix}--` : ""}`;
   return objectToCss(mapTransform(customProperties, options, rules, regExp, prefix, true));
 };
-const mapTransform = (customProperties, options, rules, regExp, prefix, isParent, parentPrefix = "", parentSuffix = "") => {
+const mapTransform = (customProperties, options, rules, regExp, prefix, isParent, parentPrefix = "", parentSuffix = "", observeProperty = (property, value) => {
+}) => {
+  const setSelector = (selector, property, value) => {
+    prepareSelector(selector);
+    observeProperty(property, value);
+    rules[selector][property] = value;
+  };
+  const prepareSelector = (selector) => rules[selector] = rules[selector] || {};
   for (const prop in customProperties) {
     const { value, attrs, props } = customProperties[prop];
     const [selector, selectorAttrs, excludeAttrs] = options.scope === ":root" ? [options.scope, []] : getSelector(attrs, options.scope);
     if (regExp && !regExp.test(prop))
       continue;
-    const token = regExp ? prop.replace(regExp, "") : prop;
+    const token = regExp && options.use ? prop.replace(regExp, "$1") : prop;
+    const currentRegExp = options.use ? regExp : null;
     if (!token)
       continue;
-    rules[selector] = rules[selector] || {};
+    prepareSelector(selector);
     if (selector.startsWith("@") && isParent) {
       mapTransform({
         [prop]: {
@@ -88,51 +99,27 @@ const mapTransform = (customProperties, options, rules, regExp, prefix, isParent
       }, options, rules[selector], regExp, prefix, false);
       continue;
     }
-    const nextValue = value.replace(/([\$]+){1,2}([\w\-]+)/g, (_, type, variable) => {
-      const inRoot = customProperties[variable];
-      return type === "$" && inRoot && options.scope != ":root" ? `var(--${variable.replace(regExp, "")})` : `var(${prefix}${variable})`;
-    });
+    const nextValue = options.scope === ":root" || value.includes("$") ? value.replace(/\$(\$)?([\w\-]+)/g, (_, reference, variable) => reference ? `var(--${variable})` : `var(${prefix}${variable})`) : `var(${prefix}${prop})`;
     if (options.scope === ":root") {
-      rules[selector][`${prefix}${prop}`] = nextValue != value ? nextValue : value;
+      setSelector(selector, `${prefix}${prop}`, nextValue != value ? nextValue : value);
     } else {
-      const isHostContext = selector.startsWith(":host-context");
-      const isSlotted = selector.startsWith("::slotted");
-      let id = parentPrefix + props.join("-").replace(regExp, "") + parentSuffix;
+      const isHostContext = selector.startsWith(HOST_CONTEXT);
+      const isSlotted = selector.startsWith(SLOTTED);
+      let id = parentPrefix + props.join("-").replace(currentRegExp, "$1") + parentSuffix;
       if (isHostContext) {
         const token2 = selectorAttrs.map((value2) => value2.replace(/\[/g, "(").replace(/\]/g, ")")).map(customPropertyToHumanName).reduce((prop2, value2) => prop2.replace(`--${value2}`, ""), prop);
-        if (options.bind) {
-          rules[selector][`--_${token2}`] = nextValue != value ? nextValue : `var(${prefix}${prop})`;
-        } else {
-          rules[selector][`${prefix}${token2}`] = nextValue != value ? nextValue : `var(${prefix}${prop})`;
-        }
+        setSelector(selector, `${prefix}${token2}`, nextValue != value ? nextValue : `var(${prefix}${prop})`);
       } else if (isSlotted) {
-        if (excludeAttrs.length) {
-          mapTransform({
-            [prop]: {
-              ...customProperties[prop],
-              attrs: excludeAttrs,
-              props: [...customProperties[prop].props]
-            }
-          }, {
-            ...options,
-            bind: false
-          }, rules, regExp, prefix, false, "", customProperties[prop].alias[0] ? `--${customProperties[prop].alias[0]}` : "");
-          continue;
-        }
-        const idSlot = `--${prop}`;
-        rules[":host"][idSlot] = `var(${prefix}${prop})`;
-        rules[selector][`--${id}`] = `var(${idSlot})`;
+        setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
+        setSelector(selector, `--${id}`, `var(--${token})`);
       } else {
-        if (nextValue != value) {
-          rules[selector][`--${id}`] = nextValue;
-        } else if (!isSlotted && options.bind && selectorAttrs.length) {
-          rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
-          rules[selector][`--_${id}`] = `var(--_${token})`;
-        } else if (!isSlotted && options.bind) {
-          rules[selector][`--_${token}`] = `var(${prefix}${prop})`;
-          rules[selector][`--${id}`] = `var(--_${token})`;
+        if (attrs.length) {
+          setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
+          setSelector(selector, `--${id}`, `var(--${token})${options.bind ? "!important" : ""}`);
+        } else if (nextValue != value) {
+          setSelector(selector, `--${id}`, nextValue);
         } else {
-          rules[selector][`--${id}`] = `var(${prefix}${prop})`;
+          setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
         }
       }
     }
@@ -164,20 +151,24 @@ const customPropertyToHumanName = (name) => {
   if (tokens?.[0]?.type === "operator")
     return tokens?.[0]?.value;
   return tokens.map(({ type, parts: [attr, operator = "=", value] }) => {
-    if (type === "slot") {
-      if (attr === "*") {
-        return [Alias["slot=*"]];
-      }
-      value = attr;
-      attr = "slot";
+    if (type === "slot" && attr === "slot" && value === "*") {
+      value = Alias[value] || value;
     }
     const alias = Alias[operator] || "";
+    value = value === "true" ? "" : value;
     return value ? [attr, alias, value] : [alias, attr];
   }).flat(1).join("-");
 };
 const createCustomProperties = (data, customProperties = {}, currentAttrs = [], currentProps = [], currentAlias = []) => {
   for (const prop in data) {
     const value = data[prop];
+    if (prop !== "=") {
+      const [ref] = parse(prop);
+      if (ref?.type === "root") {
+        createCustomProperties({ [ref.value]: value }, customProperties, currentAttrs, [], currentAlias);
+        continue;
+      }
+    }
     const alia = customPropertyToHumanName(prop);
     const [attrs, props, alias] = prop === "=" ? [currentAttrs, currentProps, currentAlias] : prop != alia ? [
       [...currentAttrs, prop],
@@ -198,7 +189,7 @@ const createCustomProperties = (data, customProperties = {}, currentAttrs = [], 
   }
   return customProperties;
 };
-function getSelector(attrs, scope = ":host") {
+function getSelector(attrs, scope = HOST) {
   const nextAttrs = attrs.map(parse).flat(1);
   const noAttrs = nextAttrs.filter((ref) => ref.type !== "");
   const excludeAttrs = noAttrs.length ? nextAttrs.filter((ref) => !ref.type).map((ref) => ref.raw) : [];
@@ -207,8 +198,8 @@ function getSelector(attrs, scope = ":host") {
     let suffix = "]";
     switch (type) {
       case "slot": {
-        scope = "::slotted";
-        if (attr === "*") {
+        scope = SLOTTED;
+        if (attr === "*" || value === "*" && attr === "slot") {
           return "*";
         }
         if (!operator) {
@@ -226,14 +217,17 @@ function getSelector(attrs, scope = ":host") {
         break;
       }
       case "context": {
-        scope = ":host-context";
+        scope = HOST_CONTEXT;
         break;
       }
+    }
+    if (value === "true" && operator === "=") {
+      operator = "";
     }
     return operator === "!=" ? `:not([${attr}=${value}])` : `${prefix}${attr}${operator ? `${operator}${value}` : ""}${suffix}`;
   });
   return [
-    `${scope}${/^(:host|::slotted|@)/.test(scope) && selector.length ? `(${selector.join("")})` : `${selector.join("")}`}`,
+    `${scope}${/^(:host|::slotted|@)/.test(scope) && selector.length ? `(${selector.join("").replace("]*", "]")})` : `${selector.join("")}`}`,
     selector,
     excludeAttrs
   ];
