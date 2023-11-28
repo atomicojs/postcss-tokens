@@ -108,10 +108,16 @@ const mapTransform = (
             options.scope === ":root" || value.includes("$")
                 ? value.replace(
                       /\$(\$)?([\w\-]+)/g,
-                      (_: string, reference, variable: string) =>
-                          reference
+                      (_, reference, variable) => {
+                          if (variable.startsWith(prop)) {
+                              return `var(--${variable.replace(regExp, "$1")})`;
+                          } else if (!customProperties[prop].attrs.length) {
+                              return `var(--${variable})`;
+                          }
+                          return reference
                               ? `var(--${variable})`
-                              : `var(${prefix}${variable})`
+                              : `var(${prefix}${variable})`;
+                      }
                   )
                 : `var(${prefix}${prop})`;
 
