@@ -143,8 +143,7 @@ const mapTransform = (
                 props.join("-").replace(currentRegExp, "$1") +
                 parentSuffix;
             if (isHostContext || isSlotted) {
-                setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
-                setSelector(selector, `--${id}`, `var(--${token})`);
+                setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
             } else {
                 if (attrs.length) {
                     setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
