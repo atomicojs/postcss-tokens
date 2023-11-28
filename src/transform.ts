@@ -104,15 +104,23 @@ const mapTransform = (
             continue;
         }
 
+        const [baseProp] = prop.split("-");
+
         const nextValue =
             options.scope === ":root" || value.includes("$")
                 ? value.replace(
                       /\$(\$)?([\w\-]+)/g,
                       (_, reference, variable) => {
-                          if (variable.startsWith(prop)) {
-                              return `var(--${variable.replace(regExp, "$1")})`;
-                          } else if (!customProperties[prop].attrs.length) {
-                              return `var(--${variable})`;
+                          if (options.scope != ":root") {
+                              const [baseVariable] = variable.split("-");
+                              if (baseVariable === baseProp) {
+                                  return `var(--${variable.replace(
+                                      options.use ? regExp : null,
+                                      "$1"
+                                  )})`;
+                              } else if (!customProperties[prop].attrs.length) {
+                                  return `var(--${variable})`;
+                              }
                           }
                           return reference
                               ? `var(--${variable})`

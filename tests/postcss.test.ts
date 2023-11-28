@@ -64,6 +64,7 @@ test("context", async () => {
     const result = await postcss([postcssTokens()]).process(
         `
         @tokens "./tokens-4.yaml" prefix(my-ds) scope(:root);
+        @tokens "./tokens-4.yaml" prefix(my-ds) filter(color);
         @tokens "./tokens-4.yaml" prefix(my-ds) use(button);
         `,
         {

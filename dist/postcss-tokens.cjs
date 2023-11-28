@@ -107,17 +107,23 @@ const mapTransform = (customProperties, options, rules, regExp, prefix, isParent
       }, options, rules[selector], regExp, prefix, false);
       continue;
     }
-    const nextValue = options.scope === ":root" || value.includes("$") ? value.replace(/\$(\$)?([\w\-]+)/g, (_, reference, variable) => reference ? `var(--${variable})` : `var(${prefix}${variable})`) : `var(${prefix}${prop})`;
+    const nextValue = options.scope === ":root" || value.includes("$") ? value.replace(/\$(\$)?([\w\-]+)/g, (_, reference, variable) => {
+      if (options.scope != ":root") {
+        if (variable.startsWith(prop)) {
+          return `var(--${variable.replace(regExp, "$1")})`;
+        } else if (!customProperties[prop].attrs.length) {
+          return `var(--${variable})`;
+        }
+      }
+      return reference ? `var(--${variable})` : `var(${prefix}${variable})`;
+    }) : `var(${prefix}${prop})`;
     if (options.scope === ":root") {
       setSelector(selector, `${prefix}${prop}`, nextValue != value ? nextValue : value);
     } else {
       const isHostContext = selector.startsWith(HOST_CONTEXT);
       const isSlotted = selector.startsWith(SLOTTED);
       let id = parentPrefix + props.join("-").replace(currentRegExp, "$1") + parentSuffix;
-      if (isHostContext) {
-        setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
-        setSelector(selector, `--${id}`, `var(--${token})`);
-      } else if (isSlotted) {
+      if (isHostContext || isSlotted) {
         setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
         setSelector(selector, `--${id}`, `var(--${token})`);
       } else {
@@ -233,7 +239,7 @@ function getSelector(attrs, scope = HOST) {
     if (value === "true" && operator === "=") {
       operator = "";
     }
-    return operator === "!=" ? `:not([${attr}=${value}])` : `${prefix}${attr}${operator ? `${operator}${value}` : ""}${suffix}`;
+    return (operator === "!=" ? `:not([${attr}=${value}])` : `${prefix}${attr}${operator ? `${operator}${value}` : ""}${suffix}`).replace(/=true]/g, "]");
   });
   return [
     `${scope}${/^(:host|::slotted|@)/.test(scope) && selector.length ? `(${selector.join("").replace("]*", "]")})` : `${selector.join("")}`}`,

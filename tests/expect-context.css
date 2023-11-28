@@ -1,6 +1,46 @@
-:root{--my-ds--color-primary:white;--my-ds--color-secondary:black;--my-ds--button-color-container:var(--my-ds--color-primary);--my-ds--button-border:var(--my-ds--button-border-size) solid var(--my-ds--button-color-container);--my-ds--button-border-size:1px;--my-ds--button-color-container--is-active:var(--my-ds--color-secondary);--my-ds--button-color-container--theme-is-black:var(--my-ds--color-secondary);--my-ds--button-color-container--theme-is-black--is-active:var(--my-ds--color-primary);--my-ds--button-border-size--size-is-small:2px;}
-        :host{--color-container:var(--my-ds--color-primary);--border:var(--my-ds--button-border-size) solid var(--my-ds--button-color-container);--border-size:var(--my-ds--button-border-size);--color-container--is-active:var(--my-ds--button-color-container--is-active);--color-container--theme-is-black:var(--my-ds--button-color-container--theme-is-black);--color-container--theme-is-black--is-active:var(--my-ds--button-color-container--theme-is-black--is-active);--border-size--size-is-small:var(--my-ds--button-border-size--size-is-small);}
-        :host([active]){--color-container:var(--color-container--is-active);}
-        :host-context([theme=black]){--color-container:var(--color-container--theme-is-black--is-active);}
-        :host-context([size=small]){--border-size:var(--border-size--size-is-small);}
-        
+:root {
+    --my-ds--color-primary: white;
+    --my-ds--color-secondary: black;
+    --my-ds--button-color-container: var(--my-ds--color-primary);
+    --my-ds--button-border: var(--my-ds--button-border-size) solid
+        var(--my-ds--button-color-container);
+    --my-ds--button-border-size: 1px;
+    --my-ds--button-color-container--is-active: var(--my-ds--color-secondary);
+    --my-ds--button-color-container--theme-is-black: var(
+        --my-ds--color-secondary
+    );
+    --my-ds--button-color-container--theme-is-black--is-active: var(
+        --my-ds--color-primary
+    );
+    --my-ds--button-border-size--size-is-small: 2px;
+}
+:host {
+    --color-primary: var(--my-ds--color-primary);
+    --color-secondary: var(--my-ds--color-secondary);
+}
+:host {
+    --color-container: var(--color-primary);
+    --border: var(--border-size) solid var(--color-container);
+    --border-size: var(--my-ds--button-border-size);
+    --color-container--is-active: var(
+        --my-ds--button-color-container--is-active
+    );
+    --color-container--theme-is-black: var(
+        --my-ds--button-color-container--theme-is-black
+    );
+    --color-container--theme-is-black--is-active: var(
+        --my-ds--button-color-container--theme-is-black--is-active
+    );
+    --border-size--size-is-small: var(
+        --my-ds--button-border-size--size-is-small
+    );
+}
+:host([active]) {
+    --color-container: var(--color-container--is-active);
+}
+:host-context([theme="black"]) {
+    --color-container: var(--color-container--theme-is-black--is-active);
+}
+:host-context([size="small"]) {
+    --border-size: var(--border-size--size-is-small);
+}
