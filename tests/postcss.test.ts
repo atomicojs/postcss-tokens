@@ -11,7 +11,7 @@ test("result host, with root", async () => {
             from: "./tests/demo.css",
         }
     );
-    await writeFile("./tests/expect-root-from-json.css", result.css);
+    // await writeFile("./tests/expect-root-from-json.css", result.css);
     assert.is(
         result.css,
         await readFile("./tests/expect-root-from-json.css", "utf8")
@@ -28,7 +28,7 @@ test("result file yaml", async () => {
         }
     );
 
-    await writeFile("./tests/expect-root.css", result.css);
+    // await writeFile("./tests/expect-root.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-root.css", "utf8"));
 });
 
@@ -42,7 +42,7 @@ test("result file yaml", async () => {
         }
     );
 
-    await writeFile("./tests/expect-host.css", result.css);
+    // await writeFile("./tests/expect-host.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-host.css", "utf8"));
 });
 
@@ -56,7 +56,7 @@ test("result file yaml", async () => {
         }
     );
 
-    await writeFile("./tests/expect-filter.css", result.css);
+    // await writeFile("./tests/expect-filter.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-filter.css", "utf8"));
 });
 
@@ -72,7 +72,7 @@ test("context", async () => {
         }
     );
 
-    await writeFile("./tests/expect-context.css", result.css);
+    // await writeFile("./tests/expect-context.css", result.css);
     assert.is(result.css, await readFile("./tests/expect-context.css", "utf8"));
 });
 
@@ -87,7 +87,7 @@ test("references", async () => {
         }
     );
 
-    await writeFile("./tests/expect-references.css", result.css);
+    // await writeFile("./tests/expect-references.css", result.css);
     assert.is(
         result.css,
         await readFile("./tests/expect-references.css", "utf8")
