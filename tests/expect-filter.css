@@ -1,2 +1,2 @@
-:host{--font-border:var(--font-border-size) solid var(--font-border-color);--font-border-size:var(--my-ds--font-border-size);--font-border-color:var(--my-ds--font-border-color);--font-border-size--is-small:var(--my-ds--font-border-size--is-small);}:host([small]){--font-border-size:var(--font-border-size--is-small);}
+:host{--font-border:var(--font-border-size) solid var(--font-border-color);--font-border-size:var(--my-ds--font-border-size);--font-border-color:var(--my-ds--font-border-color);}:host([small]){--font-border-size:var(--my-ds--font-border-size--is-small);}
         
