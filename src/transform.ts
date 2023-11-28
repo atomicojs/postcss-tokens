@@ -145,15 +145,15 @@ const mapTransform = (
             if (isHostContext || isSlotted) {
                 setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
             } else {
-                if (attrs.length) {
+                if (nextValue != value) {
+                    setSelector(selector, `--${id}`, nextValue);
+                } else if (attrs.length) {
                     setSelector(HOST, `--${token}`, `var(${prefix}${prop})`);
                     setSelector(
                         selector,
                         `--${id}`,
                         `var(--${token})${options.bind ? "!important" : ""}`
                     );
-                } else if (nextValue != value) {
-                    setSelector(selector, `--${id}`, nextValue);
                 } else {
                     setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
                 }
