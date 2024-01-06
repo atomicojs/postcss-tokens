@@ -5,6 +5,7 @@ export interface Options {
     use?: string;
     filter?: string;
     bind?: boolean;
+    defaultValues: boolean;
 }
 
 interface Data {
@@ -106,6 +107,8 @@ const mapTransform = (
 
         const [baseProp] = prop.split("-");
 
+        const defaultValue = options.defaultValues ? `, ${value}` : "";
+
         const nextValue =
             options.scope === ":root" || value.includes("$")
                 ? value.replace(
@@ -127,7 +130,7 @@ const mapTransform = (
                               : `var(${prefix}${variable})`;
                       }
                   )
-                : `var(${prefix}${prop})`;
+                : `var(${prefix}${prop}${defaultValue})`;
 
         if (options.scope === ":root") {
             setSelector(
@@ -143,7 +146,11 @@ const mapTransform = (
                 props.join("-").replace(currentRegExp, "$1") +
                 parentSuffix;
             if (isHostContext || isSlotted) {
-                setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
+                setSelector(
+                    selector,
+                    `--${id}`,
+                    `var(${prefix}${prop}${defaultValue})`
+                );
             } else {
                 if (nextValue != value) {
                     setSelector(selector, `--${id}`, nextValue);
@@ -155,7 +162,11 @@ const mapTransform = (
                         `var(--${token})${options.bind ? "!important" : ""}`
                     );
                 } else {
-                    setSelector(selector, `--${id}`, `var(${prefix}${prop})`);
+                    setSelector(
+                        selector,
+                        `--${id}`,
+                        `var(${prefix}${prop}${defaultValue})`
+                    );
                 }
             }
         }

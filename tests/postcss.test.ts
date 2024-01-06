@@ -94,4 +94,21 @@ test("references", async () => {
     );
 });
 
+test("with default", async () => {
+    const result = await postcss([postcssTokens()]).process(
+        `
+        @tokens "./tokens-1.yaml" prefix(my-ds) defaultValues;
+        `,
+        {
+            from: "./tests/demo.css",
+        }
+    );
+
+    // await writeFile("./tests/expect-with-default.css", result.css);
+    assert.is(
+        result.css,
+        await readFile("./tests/expect-with-default.css", "utf8")
+    );
+});
+
 test.run();
